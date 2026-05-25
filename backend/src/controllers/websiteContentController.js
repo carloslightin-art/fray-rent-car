@@ -1,3 +1,4 @@
+const { errorDetails } = require('../utils/safeErrors')
 const { WebsiteContent, Vehicle } = require('../models')
 
 // Obtener todo el contenido web
@@ -22,7 +23,7 @@ exports.getAllContent = async (req, res) => {
     
     res.json(organized)
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener contenido', error: error.message })
+    res.status(500).json({ message: 'Error al obtener contenido', ...errorDetails(error) })
   }
 }
 
@@ -46,7 +47,7 @@ exports.getContentBySection = async (req, res) => {
     
     res.json(organized)
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener contenido', error: error.message })
+    res.status(500).json({ message: 'Error al obtener contenido', ...errorDetails(error) })
   }
 }
 
@@ -54,24 +55,27 @@ exports.getContentBySection = async (req, res) => {
 exports.updateContent = async (req, res) => {
   try {
     const { section, key_name, value, value_type, is_active } = req.body
-    
-    const [updated] = await WebsiteContent.update(
-      { 
-        value: value !== undefined ? value : undefined,
+
+    const [content, created] = await WebsiteContent.findOrCreate({
+      where: { section, key_name },
+      defaults: {
+        value: value !== undefined ? String(value) : '',
         value_type: value_type || 'text',
         is_active: is_active !== undefined ? is_active : true
-      },
-      { where: { section, key_name } }
-    )
-    
-    if (!updated) {
-      return res.status(404).json({ message: 'Contenido no encontrado' })
+      }
+    })
+
+    if (!created) {
+      await content.update({
+        value: value !== undefined ? String(value) : content.value,
+        value_type: value_type || content.value_type,
+        is_active: is_active !== undefined ? is_active : content.is_active
+      })
     }
-    
-    const content = await WebsiteContent.findOne({ where: { section, key_name } })
-    res.json({ message: 'Contenido actualizado', content })
+
+    res.json({ message: created ? 'Contenido creado' : 'Contenido actualizado', content })
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar contenido', error: error.message })
+    res.status(500).json({ message: 'Error al actualizar contenido', ...errorDetails(error) })
   }
 }
 
@@ -79,27 +83,38 @@ exports.updateContent = async (req, res) => {
 exports.updateSectionContent = async (req, res) => {
   try {
     const { section, contents } = req.body
-    
+
     if (!contents || typeof contents !== 'object') {
       return res.status(400).json({ message: 'Se requiere un objeto con los contenidos' })
     }
-    
+
     const updates = []
     for (const [key_name, data] of Object.entries(contents)) {
-      const updateData = {}
-      if (data.value !== undefined) updateData.value = data.value
-      if (data.type) updateData.value_type = data.type
-      if (data.is_active !== undefined) updateData.is_active = data.is_active
-      
-      const [updated] = await WebsiteContent.update(updateData, {
-        where: { section, key_name }
+      if (data.value === undefined || data.value === null) continue
+
+      const [found] = await WebsiteContent.findOrCreate({
+        where: { section, key_name },
+        defaults: {
+          value: String(data.value),
+          value_type: data.type || 'text',
+          is_active: data.is_active !== undefined ? data.is_active : true
+        }
       })
-      if (updated) updates.push(key_name)
+
+      if (found) {
+        await found.update({
+          value: data.value !== undefined ? String(data.value) : found.value,
+          value_type: data.type || found.value_type,
+          is_active: data.is_active !== undefined ? data.is_active : found.is_active
+        })
+      }
+
+      updates.push(key_name)
     }
-    
+
     res.json({ message: 'Contenido actualizado', updated: updates })
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar contenido', error: error.message })
+    res.status(500).json({ message: 'Error al actualizar contenido', ...errorDetails(error) })
   }
 }
 
@@ -121,7 +136,7 @@ exports.getFeaturedVehicles = async (req, res) => {
     
     res.json(vehicles)
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener vehículos destacados', error: error.message })
+    res.status(500).json({ message: 'Error al obtener vehículos destacados', ...errorDetails(error) })
   }
 }
 
@@ -141,6 +156,6 @@ exports.updateFeaturedVehicles = async (req, res) => {
     
     res.json({ message: 'Vehículos destacados actualizados' })
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar vehículos', error: error.message })
+    res.status(500).json({ message: 'Error al actualizar vehículos', ...errorDetails(error) })
   }
 }

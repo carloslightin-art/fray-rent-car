@@ -1,3 +1,4 @@
+const { errorDetails } = require('../utils/safeErrors')
 const { Vehicle } = require('../models')
 
 // Listar todos los vehículos (para admin)
@@ -11,7 +12,7 @@ const listVehicles = async (_req, res) => {
     })
     return res.json(vehicles)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al listar vehículos', error: error.message })
+    return res.status(500).json({ message: 'Error al listar vehículos', ...errorDetails(error) })
   }
 }
 
@@ -27,7 +28,7 @@ const listActiveVehicles = async (_req, res) => {
     })
     return res.json(vehicles)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al listar vehículos', error: error.message })
+    return res.status(500).json({ message: 'Error al listar vehículos', ...errorDetails(error) })
   }
 }
 
@@ -47,7 +48,7 @@ const listFeaturedVehicles = async (_req, res) => {
     })
     return res.json(vehicles)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al listar vehículos destacados', error: error.message })
+    return res.status(500).json({ message: 'Error al listar vehículos destacados', ...errorDetails(error) })
   }
 }
 
@@ -59,7 +60,7 @@ const getVehicleById = async (req, res) => {
     }
     return res.json(vehicle)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener vehículo', error: error.message })
+    return res.status(500).json({ message: 'Error al obtener vehículo', ...errorDetails(error) })
   }
 }
 
@@ -87,7 +88,7 @@ const createVehicle = async (req, res) => {
 
     return res.status(201).json(vehicle)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al crear vehículo', error: error.message })
+    return res.status(500).json({ message: 'Error al crear vehículo', ...errorDetails(error) })
   }
 }
 
@@ -101,7 +102,7 @@ const updateVehicle = async (req, res) => {
     await vehicle.update(req.body)
     return res.json(vehicle)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al actualizar vehículo', error: error.message })
+    return res.status(500).json({ message: 'Error al actualizar vehículo', ...errorDetails(error) })
   }
 }
 
@@ -115,7 +116,7 @@ const deleteVehicle = async (req, res) => {
     await vehicle.destroy()
     return res.json({ message: 'Vehículo eliminado correctamente' })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al eliminar vehículo', error: error.message })
+    return res.status(500).json({ message: 'Error al eliminar vehículo', ...errorDetails(error) })
   }
 }
 
@@ -130,7 +131,7 @@ const toggleFeatured = async (req, res) => {
     await vehicle.update({ is_featured: !vehicle.is_featured })
     return res.json({ message: 'Estado de destacado actualizado', vehicle })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al actualizar destacado', error: error.message })
+    return res.status(500).json({ message: 'Error al actualizar destacado', ...errorDetails(error) })
   }
 }
 
@@ -145,7 +146,7 @@ const toggleActive = async (req, res) => {
     await vehicle.update({ is_active: !vehicle.is_active })
     return res.json({ message: 'Estado de activo actualizado', vehicle })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al actualizar activo', error: error.message })
+    return res.status(500).json({ message: 'Error al actualizar activo', ...errorDetails(error) })
   }
 }
 

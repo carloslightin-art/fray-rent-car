@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getVehicles, createVehicle, updateVehicle, deleteVehicle, toggleVehicleFeatured, toggleVehicleActive, uploadVehicleImage } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { Star, StarOff, Plus, Edit2, Trash2, X, Image, Check, XCircle, Upload, Loader2 } from 'lucide-react'
+import { Star, StarOff, Plus, Edit2, Trash2, X, Check, XCircle, Upload, Loader2 } from 'lucide-react'
 
 function Vehicles() {
   const { user } = useAuth()
@@ -37,10 +37,6 @@ function Vehicles() {
       const response = await getVehicles()
       setVehicles(response.data)
       setError(null)
-      // Diagnóstico: verificar image_url de cada vehículo
-      response.data.forEach(v => {
-        console.log(`[Vehicles] ID ${v.id}: ${v.brand} ${v.model} | image_url:`, v.image_url)
-      })
     } catch (err) {
       console.error('Error fetching vehicles:', err)
       setError('Error al cargar los vehículos')
@@ -251,6 +247,10 @@ function Vehicles() {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url
     }
+    // Si es asset público del frontend/admin, servirlo desde Vite directamente
+    if (url.startsWith('/images/')) {
+      return url
+    }
     // Si comienza con /uploads (ruta relativa del backend)
     if (url.startsWith('/uploads')) {
       const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '')
@@ -259,6 +259,20 @@ function Vehicles() {
     // Para cualquier otra ruta relativa
     const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '')
     return `${API_URL}/${url}`
+  }
+
+  const getFallbackVehicleImage = (vehicle) => {
+    const fallbackImages = [
+      '/images/vehicles/car-1.jpg',
+      '/images/vehicles/car-2.jpg',
+      '/images/vehicles/car-3.jpg'
+    ]
+    const index = Math.abs(Number(vehicle?.id || 1) - 1) % fallbackImages.length
+    return fallbackImages[index]
+  }
+
+  const getDisplayVehicleImage = (vehicle) => {
+    return getVehicleImageUrl(vehicle?.image_url) || getFallbackVehicleImage(vehicle)
   }
 
   const getStatusLabel = (status) => {
@@ -568,22 +582,15 @@ function Vehicles() {
               
               {/* Imagen */}
               <div className="aspect-[16/10] rounded-lg overflow-hidden bg-luxuryPanel mb-3 border border-luxuryGold/10">
-                {vehicle.image_url ? (
-                  <img 
-                    src={getVehicleImageUrl(vehicle.image_url)} 
-                    alt={`${vehicle.brand} ${vehicle.model}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      e.target.src = '/images/placeholder-vehicle.jpg'
-                      e.target.style.opacity = '0.5'
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-luxuryMuted gap-3 bg-gradient-to-br from-luxuryPanel to-[#0a0a0a]">
-                    <Image className="w-10 h-10 opacity-40" />
-                    <span className="text-xs font-medium">Sin imagen disponible</span>
-                  </div>
-                )}
+                <img 
+                  src={getDisplayVehicleImage(vehicle)} 
+                  alt={`${vehicle.brand} ${vehicle.model}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = getFallbackVehicleImage(vehicle)
+                  }}
+                />
               </div>
               
               {/* Info */}

@@ -204,6 +204,12 @@ function Clients() {
         </div>
       ) : (
         <div className="panel-card overflow-hidden">
+          {/* Indicador de modo lectura para workers */}
+          {!isOwner && (
+            <div className="border-b border-luxuryGold/15 bg-luxuryPanel px-4 py-2">
+              <p className="text-xs text-luxuryMuted">📖 Modo visualización (Worker)</p>
+            </div>
+          )}
           <table className="min-w-full text-left text-sm">
             <thead className="bg-luxuryPanel">
               <tr className="border-b border-luxuryGold/15 text-luxuryMuted">
@@ -211,7 +217,7 @@ function Clients() {
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Teléfono</th>
                 <th className="px-4 py-3 font-medium">Licencia</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
+                {isOwner && <th className="px-4 py-3 font-medium">Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -221,24 +227,22 @@ function Clients() {
                   <td className="px-4 py-3 text-luxuryMuted">{client.email}</td>
                   <td className="px-4 py-3 text-luxuryText">{client.phone}</td>
                   <td className="px-4 py-3 text-luxuryMuted">{client.license_number}</td>
-                  <td className="px-4 py-3">
-                    {isOwner && (
-                      <>
-                        <button 
-                          onClick={() => handleEdit(client)}
-                          className="ghost-btn mr-2 !px-3 !py-1.5 text-xs"
-                        >
-                          Editar
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(client.id)}
-                          className="ghost-btn !px-3 !py-1.5 text-xs text-luxuryDanger hover:text-luxuryDanger"
-                        >
-                          Eliminar
-                        </button>
-                      </>
-                    )}
-                  </td>
+                  {isOwner && (
+                    <td className="px-4 py-3">
+                      <button 
+                        onClick={() => handleEdit(client)}
+                        className="ghost-btn mr-2 !px-3 !py-1.5 text-xs"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(client.id)}
+                        className="ghost-btn !px-3 !py-1.5 text-xs text-luxuryDanger hover:text-luxuryDanger"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

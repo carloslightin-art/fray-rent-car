@@ -1,51 +1,35 @@
-import { Shield, Plane } from 'lucide-react'
+import { Shield, Plane, Headphones, CreditCard } from 'lucide-react'
 
-function TrustServices({ 
-  title = 'SERVICIO DE CONFIANZA',
-  item1Title = 'Seguro Incluido',
-  item1Description = 'Cobertura completa en todos nuestros vehículos',
-  item2Title = 'Entrega en Aeropuerto',
-  item2Description = 'Entrega y recogida en principales aeropuertos'
-}) {
+const services = [
+  ['Seguro incluido', 'Cobertura completa y condiciones claras antes de confirmar.', Shield],
+  ['Entrega en aeropuerto', 'Recogida y devolución en puntos estratégicos de República Dominicana.', Plane],
+  ['Atención 24/7', 'Soporte rápido para cambios, incidencias y asistencia.', Headphones],
+  ['Reserva segura', 'Proceso online con confirmación y seguimiento del equipo.', CreditCard]
+]
+
+function TrustServices() {
   return (
-    <section className="bg-gradient-to-b from-[#050505] to-[#0a0a0a] py-16 border-t border-[#c9a227]/20">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8">
-        
-        {/* Servicios en grid compacto - mejor alineación */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          
-          {/* SERVICIO 1 */}
-          <div className="flex gap-5 p-6 rounded-xl bg-[#0f0f0f]/80 border border-[#c9a227]/15 hover:border-[#c9a227]/40 hover:bg-[#0f0f0f] transition-all group">
-            {/* Icono */}
-            <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#c9a227]/20 to-[#c9a227]/5 border-2 border-[#c9a227]/40 flex items-center justify-center group-hover:border-[#c9a227]/60 group-hover:bg-gradient-to-br group-hover:from-[#c9a227]/30 group-hover:to-[#c9a227]/10 transition-all shadow-lg shadow-[#c9a227]/10">
-                <Shield className="w-8 h-8 text-[#c9a227]" />
-              </div>
-            </div>
-            
-            {/* Contenido */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-white mb-2">{item1Title}</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">{item1Description}</p>
-            </div>
+    <section className="relative overflow-hidden border-t border-[#d4af37]/15 bg-[#050505] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(212,175,55,0.13),transparent_34%)]" />
+      <div className="relative mx-auto max-w-7xl">
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[#d4af37]">Servicio de confianza</p>
+            <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl lg:text-5xl">Premium de verdad, no solo bonito</h2>
           </div>
+          <p className="max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">La experiencia tiene que sentirse profesional desde el móvil hasta el escritorio: reserva clara, soporte real y vehículos listos para entregar.</p>
+        </div>
 
-          {/* SERVICIO 2 */}
-          <div className="flex gap-5 p-6 rounded-xl bg-[#0f0f0f]/80 border border-[#c9a227]/15 hover:border-[#c9a227]/40 hover:bg-[#0f0f0f] transition-all group">
-            {/* Icono */}
-            <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#c9a227]/20 to-[#c9a227]/5 border-2 border-[#c9a227]/40 flex items-center justify-center group-hover:border-[#c9a227]/60 group-hover:bg-gradient-to-br group-hover:from-[#c9a227]/30 group-hover:to-[#c9a227]/10 transition-all shadow-lg shadow-[#c9a227]/10">
-                <Plane className="w-8 h-8 text-[#c9a227]" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {services.map(([title, description, Icon]) => (
+            <article key={title} className="group rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-5 transition hover:-translate-y-1 hover:border-[#d4af37]/45 hover:bg-[#d4af37]/[0.055]">
+              <div className="mb-5 grid h-13 w-13 place-items-center rounded-2xl border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#d4af37] transition group-hover:bg-[#d4af37] group-hover:text-black">
+                <Icon className="h-6 w-6" />
               </div>
-            </div>
-            
-            {/* Contenido */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-white mb-2">{item2Title}</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">{item2Description}</p>
-            </div>
-          </div>
-          
+              <h3 className="text-lg font-black text-white">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-zinc-400">{description}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -53,4 +37,3 @@ function TrustServices({
 }
 
 export default TrustServices
-

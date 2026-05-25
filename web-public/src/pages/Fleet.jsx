@@ -3,100 +3,72 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import VehicleCard from '../components/VehicleCard'
 import { getVehicles } from '../services/api'
+import { luxuryVehicles } from '../data/vehicles'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 
 function Fleet() {
-  const [vehiclesState, setVehiclesState] = useState([])
+  const [vehiclesState, setVehiclesState] = useState(luxuryVehicles)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const loadVehicles = async () => {
+      try {
+        setLoading(true)
+        const response = await getVehicles()
+        if (response.data && response.data.length > 0) {
+          const mappedVehicles = response.data
+            .filter((v) => v.is_active !== false)
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .map((v) => ({
+              id: v.id,
+              name: `${v.brand} ${v.model}`,
+              price_per_day: v.price_per_day,
+              image: v.image_url
+            }))
+          setVehiclesState(mappedVehicles.length ? mappedVehicles : luxuryVehicles)
+        }
+      } catch (_error) {
+        setVehiclesState(luxuryVehicles)
+      } finally {
+        setLoading(false)
+      }
+    }
     loadVehicles()
   }, [])
 
-  const loadVehicles = async () => {
-    try {
-      setLoading(true)
-      const response = await getVehicles()
-      if (response.data && response.data.length > 0) {
-        // Mapear al formato requerido, filtrando solo activos
-        const mappedVehicles = response.data
-          .filter(v => v.is_active !== false)
-          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-          .map(v => ({
-            id: v.id,
-            name: `${v.brand} ${v.model}`,
-            price_per_day: v.price_per_day,
-            image: v.image_url  // URL real desde API
-          }))
-        setVehiclesState(mappedVehicles)
-      }
-    } catch (error) {
-      console.error('Error loading vehicles:', error)
-      setVehiclesState([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-luxuryBlack">
+    <div className="min-h-screen bg-[#030303] text-white">
       <Navbar />
 
-      {/* Header Premium */}
-      <section className="relative pt-20 pb-12 overflow-hidden">
-        {/* Fondo decorativo */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#060606] to-luxuryBlack" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(212,175,55,0.08),transparent_50%)]" />
-        
-        <div className="relative section-wrap">
-          {/* Título estilo Home */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-luxuryGold/50" />
-              <span className="text-luxuryGold text-xs uppercase tracking-[0.3em] font-medium">Colección Premium</span>
-              <div className="h-px w-16 bg-gradient-to-l from-transparent to-luxuryGold/50" />
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-light text-luxuryText">
-              Nuestra <span className="font-bold text-luxuryGold">Flota</span>
-            </h1>
-            <p className="text-luxuryMuted text-sm mt-4 max-w-xl mx-auto">
-              Descubre modelos exclusivos cuidadosamente seleccionados para ofrecer potencia, diseño y una experiencia de conducción superior.
-            </p>
-          </div>
-
-          {/* Botón CTA */}
-          <div className="text-center">
-            <Link to="/booking" className="btn-gold inline-flex">
-              Reservar un vehículo
-            </Link>
-          </div>
+      <section className="relative overflow-hidden px-4 pb-12 pt-32 sm:px-6 sm:pt-36 lg:px-8 lg:pt-40">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#090909_0%,#030303_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_52%_20%,rgba(212,175,55,0.16),transparent_34%)]" />
+        <div className="relative mx-auto max-w-7xl text-center">
+          <p className="text-[11px] font-black uppercase tracking-[0.35em] text-[#d4af37]">Colección premium</p>
+          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-7xl">Nuestra flota disponible</h1>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">Vehículos seleccionados para reservas rápidas, entregas flexibles y una experiencia visual de lujo tanto en móvil como en escritorio.</p>
+          <Link to="/booking" className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-gold-gradient px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-black">
+            Reservar un vehículo
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
-      {/* Grid de vehículos */}
-      <section className="section-wrap pb-16">
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-luxuryGold border-t-transparent"></div>
-              <p className="mt-4 text-luxuryMuted">Cargando vehículos...</p>
+      <section className="px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          {loading ? (
+            <div className="grid place-items-center py-16">
+              <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#d4af37] border-t-transparent" />
             </div>
-          </div>
-        )}
-
-        {!loading && vehiclesState.length > 0 && (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {vehiclesState.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} />
-            ))}
-          </div>
-        )}
-
-        {!loading && vehiclesState.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-luxuryMuted">No hay vehículos disponibles en este momento.</p>
-          </div>
-        )}
+          ) : (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {vehiclesState.map((vehicle) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} />
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       <Footer />

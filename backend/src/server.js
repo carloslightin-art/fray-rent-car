@@ -3,6 +3,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
 
 const express = require('express')
 const cors = require('cors')
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
 const { sequelize } = require('./models')
 
 const authRoutes = require('./routes/auth')
@@ -13,33 +15,109 @@ const websiteContentRoutes = require('./routes/websiteContent')
 const uploadRoutes = require('./routes/upload')
 const userRoutes = require('./routes/users')
 const dashboardRoutes = require('./routes/dashboard')
+const contactRoutes = require('./routes/contact')
 
 const app = express()
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || '*'
-  })
-)
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+// ============================================================
+// SEGURIDAD
+// ============================================================
 
-// Servir archivos estáticos subidos
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
+// Helmet: headers de seguridad (CSP, X-Frame-Options, etc.)
+app.use(helmet())
 
-// Health check
+// CORS: en desarrollo acepta cualquier origen; en producción usa CORS_ORIGIN
+if (process.env.NODE_ENV === 'production') {
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(u => u.trim())
+    : []
+  app.use(cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true)
+      cb(null, corsOrigins.includes(origin))
+    }
+  }))
+} else {
+  app.use(cors())
+}
+
+// Rate limiting: proteger endpoints públicos
+const publicLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100,
+  message: { message: 'Demasiadas solicitudes. Intenta de nuevo en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: 'Demasiados intentos de login. Intenta de nuevo en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+app.use('/api', publicLimiter)
+app.use('/api/auth/login', authLimiter)
+
+// Parseo de body
+app.use(express.json({ limit: '5mb' }))
+app.use(express.urlencoded({ extended: true, limit: '5mb' }))
+
+// Archivos estáticos: uploads protegidos con auth
+const { authenticate } = require('./middleware/auth')
+app.use('/uploads', authenticate, express.static(path.join(__dirname, '../uploads'), {
+  dotfiles: 'deny',
+  fallthrough: false,
+  setHeaders: (res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Cache-Control', 'private, max-age=300')
+  }
+}))
+
+// ============================================================
+// HEALTH CHECK MEJORADO
+// ============================================================
 app.get('/api/health', async (_req, res) => {
+  const checks = {
+    api: true,
+    database: false,
+    database_pool: false
+  }
+
   try {
     await sequelize.authenticate()
-    return res.json({ message: 'API OK', database: 'connected' })
+    checks.database = true
+
+    // Verificar que las tablas existen
+    const tables = await sequelize.query(
+      "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ?",
+      { replacements: [process.env.DB_NAME], type: sequelize.QueryTypes.SELECT }
+    )
+    checks.database_pool = tables.length >= 4
   } catch (error) {
-    return res.status(500).json({ message: 'API OK', database: 'disconnected', error: error.message })
+    return res.status(503).json({
+      status: 'degraded',
+      message: 'Base de datos desconectada',
+      checks,
+      error: process.env.NODE_ENV !== 'production' ? error.message : undefined
+    })
   }
+
+  const healthy = checks.database && checks.database_pool
+  return res.status(healthy ? 200 : 503).json({
+    status: healthy ? 'healthy' : 'degraded',
+    message: healthy ? 'Todo OK' : 'Base de datos con problemas',
+    checks,
+    uptime_seconds: Math.round(process.uptime()),
+    environment: process.env.NODE_ENV || 'development'
+  })
 })
 
 // Root API endpoint
 app.get('/api', (_req, res) => {
-  return res.json({ 
+  return res.json({
     message: 'FRAY RENT CAR API',
     version: '1.0.0',
     status: 'active',
@@ -52,12 +130,15 @@ app.get('/api', (_req, res) => {
       websiteContent: '/api/website-content',
       upload: '/api/upload',
       users: '/api/users',
-      dashboard: '/api/dashboard'
+      dashboard: '/api/dashboard',
+      contact: '/api/contact'
     }
   })
 })
 
-// Routes
+// ============================================================
+// RUTAS
+// ============================================================
 app.use('/api/auth', authRoutes)
 app.use('/api/vehicles', vehicleRoutes)
 app.use('/api/clients', clientRoutes)
@@ -66,36 +147,47 @@ app.use('/api/website-content', websiteContentRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/dashboard', dashboardRoutes)
-
-// Debug: listar rutas registradas (solo en desarrollo)
-if (process.env.NODE_ENV !== 'production') {
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      console.log('ROUTE:', middleware.route.path)
-    } else if (middleware.name === 'router') {
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          console.log('ROUTER:', handler.route.path)
-        }
-      })
-    }
-  })
-}
+app.use('/api/contact', contactRoutes)
 
 // 404 handler
 app.use((req, res) => {
-  console.log('404:', req.method, req.url)
-  res.status(404).json({ message: 'Ruta no encontrada', method: req.method, url: req.url })
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('404:', req.method, req.url)
+  }
+  res.status(404).json({
+    message: 'Ruta no encontrada',
+    method: req.method,
+    url: req.url
+  })
 })
 
+// Error handler global
+app.use((err, req, res, _next) => {
+  console.error('ERROR:', err.message || err)
+  res.status(err.status || 500).json({
+    message: process.env.NODE_ENV === 'production'
+      ? 'Error interno del servidor'
+      : err.message
+  })
+})
+
+// ============================================================
+// ARRANQUE
+// ============================================================
 const PORT = process.env.PORT || 5001
+
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 20) {
+  console.error('⚠️  CRÍTICO: JWT_SECRET débil o no configurado. El login NO funcionará.')
+  console.error('   Configura JWT_SECRET en las variables de entorno.')
+}
 
 app.listen(PORT, async () => {
   try {
     await sequelize.authenticate()
-    console.log(`Servidor backend corriendo en http://localhost:${PORT}`)
-    console.log('Conexión MySQL establecida correctamente')
+    console.log(`✅ Servidor corriendo en http://localhost:${PORT}`)
+    console.log(`✅ MySQL conectado: ${process.env.DB_NAME}@${process.env.DB_HOST}`)
+    console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`)
   } catch (error) {
-    console.error('No se pudo conectar a MySQL:', error.message)
+    console.error('❌ No se pudo conectar a MySQL:', error.message)
   }
 })

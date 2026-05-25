@@ -6,8 +6,8 @@ function Login() {
   const { login, isAuthenticated, error, clearError } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    email: 'owner@frayrentcar.com',
-    password: 'admin123'
+    email: '',
+    password: ''
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -90,15 +90,6 @@ function Login() {
           </button>
         </form>
 
-        <div className="mt-6 border-t border-luxuryGold/10 pt-4">
-          <p className="text-xs text-luxuryMuted">Credenciales de prueba:</p>
-          <p className="mt-1 text-xs text-luxuryMuted">
-            <span className="text-luxuryGold">Owner:</span> owner@frayrentcar.com / owner123
-          </p>
-          <p className="text-xs text-luxuryMuted">
-            <span className="text-luxuryGold">Worker:</span> worker@frayrentcar.com / worker123
-          </p>
-        </div>
       </div>
     </div>
   )

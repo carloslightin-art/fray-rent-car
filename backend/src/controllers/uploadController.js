@@ -1,6 +1,7 @@
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const { errorDetails } = require('../utils/safeErrors')
 
 // Configurar almacenamiento
 const storage = multer.diskStorage({
@@ -50,7 +51,7 @@ const uploadVehicleImageController = (req, res) => {
       if (err) {
         return res.status(400).json({ 
           message: 'Error al subir imagen', 
-          error: err.message 
+          ...errorDetails(err)
         })
       }
 
@@ -97,7 +98,7 @@ const uploadVehicleImageController = (req, res) => {
   } catch (error) {
     return res.status(500).json({ 
       message: 'Error interno al procesar imagen', 
-      error: error.message 
+      ...errorDetails(error)
     })
   }
 }
@@ -133,7 +134,7 @@ const deleteVehicleImageController = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ 
       message: 'Error al eliminar imagen', 
-      error: error.message 
+      ...errorDetails(error)
     })
   }
 }

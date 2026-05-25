@@ -1,107 +1,126 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getWebsiteSection } from '../services/websiteContent'
+import { ArrowRight, ShieldCheck, Clock3, MapPin } from 'lucide-react'
 
 function Hero() {
   const [heroContent, setHeroContent] = useState({
     titleLine1: 'FRAY',
     titleLine2: 'RENT CAR',
-    subtitle: 'Alquiler de vehículos premium',
-    buttonPrimary: 'Reservar Coche',
-    buttonSecondary: 'Ver Flota'
+    subtitle: 'Alquiler premium con entrega rápida, reserva online y asistencia personalizada en República Dominicana.',
+    buttonPrimary: 'Reservar coche',
+    buttonSecondary: 'Ver flota',
+    availabilityBadge: 'Disponible ahora',
+    availabilityTitle: 'Flota premium',
+    availabilitySchedule: 'Entrega programada',
+    availabilityLocation: 'República Dominicana / Aeropuerto'
   })
 
   useEffect(() => {
+    const loadHeroContent = async () => {
+      try {
+        const response = await getWebsiteSection('hero')
+        if (response.data) {
+          setHeroContent({
+            titleLine1: response.data.title_line1?.value || 'FRAY',
+            titleLine2: response.data.title_line2?.value || 'RENT CAR',
+            subtitle: response.data.subtitle?.value || 'Alquiler premium con entrega rápida, reserva online y asistencia personalizada en República Dominicana.',
+            buttonPrimary: response.data.button_primary?.value || 'Reservar coche',
+            buttonSecondary: response.data.button_secondary?.value || 'Ver flota',
+            availabilityBadge: response.data.availability_badge?.value || 'Disponible ahora',
+            availabilityTitle: response.data.availability_title?.value || 'Flota premium',
+            availabilitySchedule: response.data.availability_schedule?.value || 'Entrega programada',
+            availabilityLocation: response.data.availability_location?.value || 'República Dominicana / Aeropuerto'
+          })
+        }
+      } catch (_error) {
+        // Mantener contenido por defecto si la API de contenido no está disponible.
+      }
+    }
     loadHeroContent()
   }, [])
 
-  const loadHeroContent = async () => {
-    try {
-      const response = await getWebsiteSection('hero')
-      if (response.data) {
-        setHeroContent({
-          titleLine1: response.data.title_line1?.value || 'FRAY',
-          titleLine2: response.data.title_line2?.value || 'RENT CAR',
-          subtitle: response.data.subtitle?.value || 'Alquiler de vehículos premium',
-          buttonPrimary: response.data.button_primary?.value || 'Reservar Coche',
-          buttonSecondary: response.data.button_secondary?.value || 'Ver Flota'
-        })
-      }
-    } catch (error) {
-      console.log('Hero content using defaults - API may not be available yet')
-    }
-  }
-
-  const backgroundStyle = {
-    backgroundImage: "url('/images/hero/hero-car.jpg')",
-    backgroundSize: 'cover',
-    backgroundPosition: 'right center',
-    backgroundAttachment: 'fixed'
-  }
-
   return (
-    <section 
-      className="relative min-h-screen bg-[#050505] overflow-hidden pt-[90px]"
-      style={backgroundStyle}
-    >
-      {/* CAPAS DE ESCENA - Glows y efectos integrados */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Glow masivo dorado - envuelve la escena */}
-        <div className="absolute -right-48 top-1/3 w-[1800px] h-[900px] bg-gradient-radial from-[#c9a227]/70 via-[#c9a227]/25 to-transparent rounded-full blur-[400px] opacity-85" />
-        
-        {/* Overlay gradual izquierda - integra texto */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/85 to-transparent z-5" />
-        
-        {/* Overlay oscuro inferior - profundidad */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#000000]/50 z-5" />
-        
-        {/* Vignette lateral derecha - suaviza bordes */}
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#000000]/30 z-5" />
+    <section className="relative min-h-[860px] overflow-hidden bg-[#030303] pt-[98px] sm:min-h-[900px] sm:pt-[120px] lg:min-h-[840px] lg:pt-[138px]">
+      <div className="absolute inset-0">
+        <img
+          src="/images/hero/hero-car.jpg"
+          alt="Vehículo premium FRAY RENT CAR"
+          className="h-full w-full object-cover object-[62%_center] opacity-80 sm:object-[68%_center] lg:object-center"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_42%,rgba(212,175,55,0.34),transparent_28%),linear-gradient(90deg,#030303_0%,rgba(3,3,3,0.95)_22%,rgba(3,3,3,0.68)_48%,rgba(3,3,3,0.18)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,3,3,0.3)_0%,rgba(3,3,3,0.08)_42%,#030303_100%)]" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#030303] to-transparent" />
       </div>
 
-      {/* CONTENIDO - Texto y botones sobre escena */}
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 h-[calc(100vh-90px)] flex items-center z-10">
-        <div className="w-full lg:w-1/2">
-          <div className="space-y-8">
-            {/* Título cinematográfico */}
-            <div>
-              <h1 className="text-7xl lg:text-8xl font-black text-white leading-[0.9] tracking-tighter mb-3 drop-shadow-2xl">
-                {heroContent.titleLine1}
-              </h1>
-              <h2 className="text-6xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#c9a227] via-[#e5c158] to-[#c9a227] leading-[0.9] drop-shadow-lg">
-                {heroContent.titleLine2}
-              </h2>
+      <div className="relative mx-auto grid min-h-[calc(860px-98px)] max-w-7xl items-center gap-10 px-4 py-12 sm:min-h-[calc(900px-120px)] sm:px-6 lg:min-h-[calc(840px-138px)] lg:grid-cols-[0.95fr_1.05fr] lg:px-8 lg:py-14">
+        <div className="max-w-2xl pt-8 sm:pt-0">
+          <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[#d4af37]/25 bg-black/45 px-4 py-2 text-[11px] font-black uppercase tracking-[0.28em] text-[#d4af37] backdrop-blur-md">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37] shadow-[0_0_18px_rgba(212,175,55,0.95)]" />
+            Luxury rental experience
+          </div>
+
+          <h1 className="max-w-[620px] text-[clamp(2.75rem,12vw,5.8rem)] font-black uppercase leading-[0.86] tracking-[-0.06em] text-white drop-shadow-2xl lg:text-[5.9rem]">
+            {heroContent.titleLine1}
+            <span className="mt-2 block bg-gradient-to-r from-[#f7dc86] via-[#d4af37] to-[#8c6a17] bg-clip-text text-transparent">
+              {heroContent.titleLine2}
+            </span>
+          </h1>
+
+          <p className="mt-7 max-w-xl text-base leading-8 text-zinc-200 sm:text-lg lg:text-xl">
+            {heroContent.subtitle}
+          </p>
+
+          <div className="mt-8 grid gap-3 sm:flex">
+            <Link
+              to="/booking"
+              className="inline-flex items-center justify-center gap-3 rounded-2xl bg-gold-gradient px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-black shadow-[0_16px_45px_rgba(212,175,55,0.3)] transition hover:-translate-y-1 hover:shadow-[0_20px_55px_rgba(212,175,55,0.42)]"
+            >
+              {heroContent.buttonPrimary}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/fleet"
+              className="inline-flex items-center justify-center rounded-2xl border border-[#d4af37]/55 bg-black/35 px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-[#f1d274] backdrop-blur-md transition hover:border-[#d4af37] hover:bg-[#d4af37]/10"
+            >
+              {heroContent.buttonSecondary}
+            </Link>
+          </div>
+
+          <div className="mt-10 grid grid-cols-3 gap-2 rounded-[1.4rem] border border-white/10 bg-black/38 p-2 backdrop-blur-xl sm:max-w-xl">
+            {[
+              ['24/7', 'Asistencia'],
+              ['60s', 'Reserva'],
+              ['100%', 'Seguro']
+            ].map(([value, label]) => (
+              <div key={label} className="rounded-2xl border border-[#d4af37]/10 bg-white/[0.035] px-3 py-4 text-center">
+                <p className="text-xl font-black text-[#d4af37] sm:text-2xl">{value}</p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative hidden h-full items-end justify-center lg:flex">
+          <div className="absolute bottom-28 right-2 w-[360px] rounded-[2rem] border border-[#d4af37]/25 bg-black/45 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.65)] backdrop-blur-xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#d4af37]">{heroContent.availabilityBadge}</p>
+                <p className="mt-1 text-2xl font-black text-white">{heroContent.availabilityTitle}</p>
+              </div>
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-[#d4af37]/15 text-[#d4af37]">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
             </div>
-
-            {/* Subtítulo con estilo */}
-            <p className="text-xl text-gray-100 font-light tracking-wide leading-relaxed max-w-md drop-shadow-lg">
-              {heroContent.subtitle}
-            </p>
-
-            {/* Botones premium */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link 
-                to="/booking" 
-                className="px-8 py-4 bg-gradient-to-r from-[#c9a227] to-[#d4af37] text-black font-black text-sm uppercase tracking-widest rounded-lg hover:from-[#d4af37] hover:to-[#c9a227] transition-all duration-300 shadow-2xl shadow-[#c9a227]/60 hover:shadow-[#c9a227]/80 hover:scale-105 transform"
-              >
-                {heroContent.buttonPrimary}
-              </Link>
-              <Link 
-                to="/fleet" 
-                className="px-8 py-4 border-2 border-[#c9a227]/80 text-[#c9a227] font-bold text-sm uppercase tracking-widest rounded-lg hover:bg-[#c9a227]/20 hover:border-[#c9a227] transition-all duration-300"
-              >
-                {heroContent.buttonSecondary}
-              </Link>
+            <div className="mt-4 grid gap-3 text-sm text-zinc-300">
+              <div className="flex items-center gap-3"><Clock3 className="h-4 w-4 text-[#d4af37]" />{heroContent.availabilitySchedule}</div>
+              <div className="flex items-center gap-3"><MapPin className="h-4 w-4 text-[#d4af37]" />{heroContent.availabilityLocation}</div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Línea divisoria */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a227]/50 to-transparent z-20" />
     </section>
   )
 }
 
 export default Hero
-

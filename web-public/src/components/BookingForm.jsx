@@ -1,8 +1,32 @@
-import { Calendar, MapPin, Car, Shield, Clock, Zap, ChevronDown } from 'lucide-react'
+import { Calendar, MapPin, Car, Shield, Clock, AlertCircle, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-function BookingForm() {
-  const [formData, setFormData] = useState({
+const locations = ['Santo Domingo Centro', 'Aeropuerto Las Américas (SDQ)', 'Punta Cana / Aeropuerto PUJ']
+const categories = [
+  { value: 'economico', label: 'Económico' },
+  { value: 'ejecutivo', label: 'Ejecutivo' },
+  { value: 'lujo', label: 'Lujo' },
+  { value: 'deportivo', label: 'Deportivo' }
+]
+
+function FieldShell({ label, icon: Icon, children }) {
+  return (
+    <label className="block">
+      <span className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#d4af37]">
+        {Icon && <Icon className="h-3.5 w-3.5" />}
+        {label}
+      </span>
+      {children}
+    </label>
+  )
+}
+
+function BookingForm({ onSubmit, formData: externalFormData, onChange, loading, error }) {
+  const navigate = useNavigate()
+  const isFullForm = !!externalFormData
+
+  const [internalFormData, setInternalFormData] = useState({
     pickup_date: '',
     return_date: '',
     pickup_location: '',
@@ -10,173 +34,172 @@ function BookingForm() {
     category: ''
   })
 
+  const formData = isFullForm ? externalFormData : internalFormData
+
+  const baseInput = 'w-full rounded-2xl border border-[#d4af37]/22 bg-[#090909]/90 px-4 py-4 text-sm font-semibold text-white outline-none transition placeholder:text-zinc-600 hover:border-[#d4af37]/45 focus:border-[#d4af37] focus:bg-[#101010] focus:shadow-[0_0_0_4px_rgba(212,175,55,0.08)]'
+  const iconInput = `${baseInput} pl-11`
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    if (isFullForm) {
+      onChange(e)
+      return
+    }
+    setInternalFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log('Reserva:', formData)
+    if (isFullForm) {
+      onSubmit(e)
+      return
+    }
+
+    const params = new URLSearchParams()
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) params.set(key, value)
+    })
+    navigate(`/booking?${params.toString()}`)
+  }
+
+  if (isFullForm) {
+    return (
+      <section className="relative px-4 pb-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-[2rem] border border-[#d4af37]/20 bg-[#070707] shadow-[0_30px_120px_rgba(0,0,0,0.45)]">
+          <div className="grid lg:grid-cols-[0.74fr_1.26fr]">
+            <aside className="relative overflow-hidden border-b border-[#d4af37]/15 bg-[#0b0b0b] p-6 sm:p-8 lg:border-b-0 lg:border-r">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(212,175,55,0.18),transparent_36%)]" />
+              <div className="relative">
+                <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#d4af37]">Reserva premium</p>
+                <h2 className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl">Confirma tu experiencia</h2>
+                <p className="mt-4 text-sm leading-7 text-zinc-400">Completa los datos para enviar la reserva. El equipo podrá confirmar disponibilidad, precio final y entrega.</p>
+                <div className="mt-8 space-y-4">
+                  {[
+                    [Shield, 'Seguro incluido'],
+                    [Clock, 'Confirmación rápida'],
+                    [Car, 'Flota seleccionada']
+                  ].map(([Icon, text]) => (
+                    <div key={text} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm font-semibold text-zinc-200">
+                      <Icon className="h-5 w-5 text-[#d4af37]" />
+                      {text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            <form onSubmit={handleSubmit} className="space-y-7 p-5 sm:p-8">
+              {error && (
+                <div className="flex gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+                  <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
+                  <p>{error}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-lg font-black text-white">Datos del conductor</h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <FieldShell label="Nombre completo">
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} className={baseInput} placeholder="Juan Pérez" required />
+                  </FieldShell>
+                  <FieldShell label="Email">
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className={baseInput} placeholder="tu@email.com" required />
+                  </FieldShell>
+                  <FieldShell label="Teléfono">
+                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={baseInput} placeholder="+1 809 000 0000" required />
+                  </FieldShell>
+                  <FieldShell label="Licencia">
+                    <input type="text" name="license_number" value={formData.license_number} onChange={handleChange} className={baseInput} placeholder="12345678X" required />
+                  </FieldShell>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black text-white">Detalles de la reserva</h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <FieldShell label="Recogida" icon={Calendar}>
+                    <input type="date" name="pickup_date" value={formData.pickup_date} onChange={handleChange} className={baseInput} required />
+                  </FieldShell>
+                  <FieldShell label="Devolución" icon={Calendar}>
+                    <input type="date" name="return_date" value={formData.return_date} onChange={handleChange} className={baseInput} required />
+                  </FieldShell>
+                  <FieldShell label="Recoger en" icon={MapPin}>
+                    <select name="pickup_location" value={formData.pickup_location} onChange={handleChange} className={baseInput} required>
+                      <option value="">Selecciona ubicación</option>
+                      {locations.map((location) => <option key={location} value={location}>{location}</option>)}
+                    </select>
+                  </FieldShell>
+                  <FieldShell label="Devolver en" icon={MapPin}>
+                    <select name="drop_location" value={formData.drop_location} onChange={handleChange} className={baseInput} required>
+                      <option value="">Selecciona ubicación</option>
+                      {locations.map((location) => <option key={location} value={location}>{location}</option>)}
+                    </select>
+                  </FieldShell>
+                  <div className="md:col-span-2">
+                    <FieldShell label="Categoría" icon={Car}>
+                      <select name="category" value={formData.category} onChange={handleChange} className={baseInput} required>
+                        <option value="">Selecciona categoría</option>
+                        {categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+                      </select>
+                    </FieldShell>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading} className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-gold-gradient px-6 py-4 text-sm font-black uppercase tracking-[0.22em] text-black shadow-[0_18px_45px_rgba(212,175,55,0.25)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60">
+                {loading ? 'Procesando reserva...' : 'Confirmar reserva'}
+                {!loading && <ArrowRight className="h-4 w-4" />}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (
-    <>
-      <section className="-mt-12 relative z-50">
-        {/* Separator line */}
-        <div className="h-[1px] bg-gradient-to-r from-[#c9a227]/0 via-[#c9a227]/40 to-[#c9a227]/0" />
-        
-        {/* Form Container - MEJORADO */}
-        <div className="bg-gradient-to-b from-[#0f0f0f] via-[#0a0a0a] to-[#050505] border-y border-[#c9a227]/30 shadow-2xl shadow-[#c9a227]/15 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-6 py-10">
-            
-            {/* Heading */}
-            <div className="mb-8">
-              <h3 className="text-2xl lg:text-3xl font-black text-white mb-2">Encuentra tu vehículo perfecto</h3>
-              <p className="text-gray-400 text-sm font-light">Selecciona fechas, ubicación y categoría</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-12 gap-4 items-end mb-8">
-              
-              {/* Fecha recogida */}
-              <div className="md:col-span-1 lg:col-span-2">
-                <label className="block text-xs uppercase tracking-wider text-[#c9a227] mb-3 font-bold">
-                  Recogida
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c9a227]/60" />
-                  <input
-                    type="date"
-                    name="pickup_date"
-                    value={formData.pickup_date}
-                    onChange={handleChange}
-                    className="w-full bg-[#1a1a1a] border-2 border-[#c9a227]/30 hover:border-[#c9a227]/60 pl-10 pr-3 py-3 rounded-lg text-sm text-white font-medium focus:border-[#c9a227] focus:outline-none focus:bg-[#222] transition-colors"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Fecha devolución */}
-              <div className="md:col-span-1 lg:col-span-2">
-                <label className="block text-xs uppercase tracking-wider text-[#c9a227] mb-3 font-bold">
-                  Devolución
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c9a227]/60" />
-                  <input
-                    type="date"
-                    name="return_date"
-                    value={formData.return_date}
-                    onChange={handleChange}
-                    className="w-full bg-[#1a1a1a] border-2 border-[#c9a227]/30 hover:border-[#c9a227]/60 pl-10 pr-3 py-3 rounded-lg text-sm text-white font-medium focus:border-[#c9a227] focus:outline-none focus:bg-[#222] transition-colors"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Lugar recogida */}
-              <div className="md:col-span-1 lg:col-span-2">
-                <label className="block text-xs uppercase tracking-wider text-[#c9a227] mb-3 font-bold">
-                  Recoger en
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c9a227]/60" />
-                  <select
-                    name="pickup_location"
-                    value={formData.pickup_location}
-                    onChange={handleChange}
-                    className="w-full bg-[#1a1a1a] border-2 border-[#c9a227]/30 hover:border-[#c9a227]/60 pl-10 pr-3 py-3 rounded-lg text-sm text-white font-medium appearance-none focus:border-[#c9a227] focus:outline-none focus:bg-[#222] transition-colors cursor-pointer"
-                    required
-                  >
-                    <option value="">Ubicación</option>
-                    <option value="Madrid Centro">Madrid Centro</option>
-                    <option value="Aeropuerto MAD">Aeropuerto MAD</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c9a227]/60 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Categoría */}
-              <div className="md:col-span-1 lg:col-span-2">
-                <label className="block text-xs uppercase tracking-wider text-[#c9a227] mb-3 font-bold">
-                  Categoría
-                </label>
-                <div className="relative">
-                  <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c9a227]/60" />
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full bg-[#1a1a1a] border-2 border-[#c9a227]/30 hover:border-[#c9a227]/60 pl-10 pr-3 py-3 rounded-lg text-sm text-white font-medium appearance-none focus:border-[#c9a227] focus:outline-none focus:bg-[#222] transition-colors cursor-pointer"
-                    required
-                  >
-                    <option value="">Categoría</option>
-                    <option value="economico">Económico</option>
-                    <option value="ejecutivo">Ejecutivo</option>
-                    <option value="lujo">Lujo</option>
-                    <option value="deportivo">Deportivo</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#c9a227]/60 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Botón RESERVAR - Destacado */}
-              <div className="md:col-span-1 lg:col-span-2">
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-[#c9a227] to-[#d4af37] text-black px-6 py-3 rounded-lg font-black text-xs uppercase tracking-widest hover:from-[#d4af37] hover:to-[#c9a227] shadow-lg shadow-[#c9a227]/50 hover:shadow-[#c9a227]/80 transition-all hover:scale-105 h-[47px] transform"
-                >
-                  Reservar
-                </button>
-              </div>
-            </form>
-
-            {/* Resumen DESTACADO en derecha */}
-            <div className="flex justify-between items-center pt-6 border-t border-[#c9a227]/20">
-              <div>
-                <p className="text-gray-500 text-sm font-light">Precio aproximado</p>
-              </div>
-              <div className="text-right">
-                <p className="text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#c9a227] via-[#e5c158] to-[#c9a227]">
-                  Desde 35€
-                </p>
-                <p className="text-xs text-gray-400 font-light">por día</p>
-              </div>
-            </div>
+    <section className="relative z-30 -mt-10 px-4 pb-10 sm:-mt-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#d4af37]/25 bg-[#050505]/92 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.55),0_0_60px_rgba(212,175,55,0.08)] backdrop-blur-xl sm:p-6 lg:p-7">
+        <div className="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d4af37]">Reserva inteligente</p>
+            <h3 className="mt-2 text-2xl font-black text-white sm:text-3xl">Encuentra tu vehículo perfecto</h3>
           </div>
+          <p className="max-w-md text-sm leading-6 text-zinc-400">Selecciona fechas, ubicación y categoría. En móvil todo queda en una columna limpia y fácil de tocar.</p>
         </div>
-        
-        <div className="h-[1px] bg-gradient-to-r from-[#c9a227]/0 via-[#c9a227]/30 to-[#c9a227]/0" />
-      </section>
 
-      {/* Beneficios debajo - 4 columnas */}
-      <section className="bg-[#0a0a0a] px-6 lg:px-8 py-12 border-b border-[#c9a227]/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: Shield, label: 'Seguro incluido', desc: 'Cobertura completa' },
-              { icon: Clock, label: 'Cancelación gratis', desc: 'Hasta 48 horas' },
-              { icon: MapPin, label: 'Entrega a domicilio', desc: 'Madrid y alrededores' },
-              { icon: Zap, label: 'Reserva en 60 seg', desc: 'Proceso ágil y seguro' }
-            ].map((item, idx) => (
-              <div key={idx} className="text-center">
-                <div className="flex justify-center mb-3">
-                  <div className="w-12 h-12 rounded-full bg-[#c9a227]/15 border border-[#c9a227]/30 flex items-center justify-center hover:bg-[#c9a227]/25 transition-colors">
-                    <item.icon size={24} className="text-[#c9a227]" />
-                  </div>
-                </div>
-                <p className="text-sm font-bold text-white mb-1">{item.label}</p>
-                <p className="text-xs text-gray-400">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </>
+        <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.05fr_1.05fr_1fr_auto]">
+          <FieldShell label="Recogida" icon={Calendar}>
+            <input type="date" name="pickup_date" value={formData.pickup_date} onChange={handleChange} className={iconInput} required />
+          </FieldShell>
+          <FieldShell label="Devolución" icon={Calendar}>
+            <input type="date" name="return_date" value={formData.return_date} onChange={handleChange} className={iconInput} required />
+          </FieldShell>
+          <FieldShell label="Recoger en" icon={MapPin}>
+            <select name="pickup_location" value={formData.pickup_location} onChange={handleChange} className={iconInput} required>
+              <option value="">Ubicación</option>
+              {locations.map((location) => <option key={location} value={location}>{location}</option>)}
+            </select>
+          </FieldShell>
+          <FieldShell label="Devolver en" icon={MapPin}>
+            <select name="drop_location" value={formData.drop_location} onChange={handleChange} className={iconInput} required>
+              <option value="">Ubicación</option>
+              {locations.map((location) => <option key={location} value={location}>{location}</option>)}
+            </select>
+          </FieldShell>
+          <FieldShell label="Categoría" icon={Car}>
+            <select name="category" value={formData.category} onChange={handleChange} className={iconInput} required>
+              <option value="">Categoría</option>
+              {categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+            </select>
+          </FieldShell>
+          <button type="submit" className="mt-5 inline-flex min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-gold-gradient px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-black shadow-[0_14px_35px_rgba(212,175,55,0.25)] transition hover:-translate-y-0.5 sm:col-span-2 xl:col-span-1 xl:mt-[29px]">
+            Reservar
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </form>
+      </div>
+    </section>
   )
 }
 
 export default BookingForm
-

@@ -265,6 +265,46 @@ function WebsiteContent() {
               className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
             />
           </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Tarjeta: Estado</label>
+            <input
+              type="text"
+              value={content.hero?.availability_badge?.value || ''}
+              onChange={(e) => updateField('hero', 'availability_badge', e.target.value)}
+              placeholder="Disponible ahora"
+              className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Tarjeta: Título</label>
+            <input
+              type="text"
+              value={content.hero?.availability_title?.value || ''}
+              onChange={(e) => updateField('hero', 'availability_title', e.target.value)}
+              placeholder="Flota premium"
+              className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Tarjeta: Disponibilidad/Horario</label>
+            <input
+              type="text"
+              value={content.hero?.availability_schedule?.value || ''}
+              onChange={(e) => updateField('hero', 'availability_schedule', e.target.value)}
+              placeholder="Entrega programada"
+              className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Tarjeta: Zona / Ubicación</label>
+            <input
+              type="text"
+              value={content.hero?.availability_location?.value || ''}
+              onChange={(e) => updateField('hero', 'availability_location', e.target.value)}
+              placeholder="República Dominicana / Aeropuerto"
+              className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
+            />
+          </div>
         </div>
 
         {isOwner ? (
@@ -525,7 +565,7 @@ function WebsiteContent() {
                 value={content.contact?.phone?.value || ''}
                 onChange={(e) => updateField('contact', 'phone', e.target.value)}
                 className="flex-1 bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
-                placeholder="+34 900 123 456"
+                placeholder="+1 809 000 0000"
               />
             </div>
           </div>
@@ -551,7 +591,7 @@ function WebsiteContent() {
                 value={content.contact?.address?.value || ''}
                 onChange={(e) => updateField('contact', 'address', e.target.value)}
                 className="flex-1 bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-2.5 text-white focus:border-yellow-500 focus:outline-none"
-                placeholder="Madrid, España"
+                placeholder="Santo Domingo, República Dominicana"
               />
             </div>
           </div>

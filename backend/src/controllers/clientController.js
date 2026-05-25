@@ -1,3 +1,4 @@
+const { errorDetails } = require('../utils/safeErrors')
 const { Client } = require('../models')
 
 const handleSequelizeError = (error) => {
@@ -21,7 +22,7 @@ const listClients = async (_req, res) => {
     const clients = await Client.findAll({ order: [['id', 'DESC']] })
     return res.json(clients)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al listar clientes', error: error.message })
+    return res.status(500).json({ message: 'Error al listar clientes', ...errorDetails(error) })
   }
 }
 
@@ -33,7 +34,7 @@ const getClientById = async (req, res) => {
     }
     return res.json(client)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener cliente', error: error.message })
+    return res.status(500).json({ message: 'Error al obtener cliente', ...errorDetails(error) })
   }
 }
 
@@ -80,7 +81,7 @@ const deleteClient = async (req, res) => {
     await client.destroy()
     return res.json({ message: 'Cliente eliminado correctamente' })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al eliminar cliente', error: error.message })
+    return res.status(500).json({ message: 'Error al eliminar cliente', ...errorDetails(error) })
   }
 }
 

@@ -1,10 +1,14 @@
 # Dependencies
 node_modules/
 
-# Environment
+# Environment / secrets
 .env
 .env.local
 .env.*.local
+.env.production
+.env.staging
+.env.development
+!.env.example
 
 # Build output
 dist/
@@ -26,6 +30,11 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Agent/tool temporary files
+.qwen/
+tmpclaude-*
+**/tmpclaude-*
 
 # PM2
 .pm2/

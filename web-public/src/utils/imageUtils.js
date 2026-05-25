@@ -4,6 +4,16 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const LOCAL_VEHICLE_FALLBACKS = [
+  '/images/vehicles/car-1.jpg',
+  '/images/vehicles/car-2.jpg',
+  '/images/vehicles/car-3.jpg'
+]
+
+export function getFallbackVehicleImageUrl(vehicleId = 1) {
+  const numericId = Number(vehicleId) || 1
+  return LOCAL_VEHICLE_FALLBACKS[Math.abs(numericId - 1) % LOCAL_VEHICLE_FALLBACKS.length]
+}
 
 /**
  * Construye la URL final de imagen para un vehículo
@@ -14,7 +24,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 export function getVehicleImageUrl(imageUrl, vehicleId) {
   // Si no hay URL, usar fallback genérico
   if (!imageUrl) {
-    return '/images/vehicles/car-1.jpg'
+    return getFallbackVehicleImageUrl(vehicleId)
   }
 
   // Si es una URL completa del backend (starts with /uploads)
@@ -34,7 +44,7 @@ export function getVehicleImageUrl(imageUrl, vehicleId) {
 
   // Fallback final
   console.warn(`[ImageUtils] Invalid image URL for vehicle ${vehicleId}:`, imageUrl)
-  return '/images/vehicles/car-1.jpg'
+  return getFallbackVehicleImageUrl(vehicleId)
 }
 
 /**

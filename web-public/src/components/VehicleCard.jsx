@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Fuel, Gauge, ShieldCheck } from 'lucide-react'
-import { getVehicleImageUrl } from '../utils/imageUtils'
+import { getFallbackVehicleImageUrl, getVehicleImageUrl } from '../utils/imageUtils'
 
 function VehicleCard({ vehicle }) {
   const { id, name, price_per_day, image } = vehicle
@@ -15,7 +15,7 @@ function VehicleCard({ vehicle }) {
           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           style={{ filter: 'brightness(0.92) contrast(1.08) saturate(1.05)' }}
           onError={(e) => {
-            e.currentTarget.src = getVehicleImageUrl('/images/vehicles/car-1.jpg', id)
+            e.currentTarget.src = getFallbackVehicleImageUrl(id)
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/16 to-transparent" />

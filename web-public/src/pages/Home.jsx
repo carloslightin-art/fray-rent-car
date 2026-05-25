@@ -5,13 +5,16 @@ import BookingForm from '../components/BookingForm'
 import VehicleCard from '../components/VehicleCard'
 import TrustServices from '../components/TrustServices'
 import Footer from '../components/Footer'
+import MobileAppHome from '../components/MobileAppHome'
 import { getFeaturedVehicles } from '../services/api'
 import { getWebsiteSection } from '../services/websiteContent'
 import { luxuryVehicles } from '../data/vehicles'
+import useMobileAppMode from '../hooks/useMobileAppMode'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MonitorSmartphone, Database, LayoutDashboard, Smartphone } from 'lucide-react'
 
 function Home() {
+  const isMobileAppMode = useMobileAppMode()
   const [fleetVehicles, setFleetVehicles] = useState(luxuryVehicles)
   const [footerData, setFooterData] = useState({
     phone: '+1 809 000 0000',
@@ -65,6 +68,10 @@ function Home() {
         <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#d4af37] border-t-transparent" />
       </div>
     )
+  }
+
+  if (isMobileAppMode) {
+    return <MobileAppHome vehicles={fleetVehicles} footerData={footerData} />
   }
 
   return (

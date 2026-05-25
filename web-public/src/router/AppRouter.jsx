@@ -3,6 +3,7 @@ import Home from '../pages/Home'
 import Fleet from '../pages/Fleet'
 import Booking from '../pages/Booking'
 import Contact from '../pages/Contact'
+import Offers from '../pages/Offers'
 
 function AppRouter() {
   return (
@@ -12,6 +13,7 @@ function AppRouter() {
         <Route path="/fleet" element={<Fleet />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/offers" element={<Offers />} />
       </Routes>
     </BrowserRouter>
   )

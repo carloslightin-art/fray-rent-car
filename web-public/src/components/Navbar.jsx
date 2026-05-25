@@ -1,141 +1,106 @@
 import { Link, NavLink } from 'react-router-dom'
 import { useState } from 'react'
-import { Menu, X, Phone } from 'lucide-react'
+import { Menu, X, Phone, Sparkles } from 'lucide-react'
 
 const navItems = [
   { name: 'Inicio', to: '/' },
   { name: 'Vehículos', to: '/fleet' },
   { name: 'Reservar', to: '/booking' },
-  { name: 'Ofertas', to: '/fleet' },
+  { name: 'Ofertas', to: '/offers' },
   { name: 'Contacto', to: '/contact' }
 ]
 
-function Navbar({ companyName = 'FRAY RENT CAR' }) {
+function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[100] bg-[#050505]/95 backdrop-blur-md border-b border-[#c9a227]/15">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[90px]">
-          
-          {/* Logo + Nombre - SELLO PREMIUM INTEGRADO */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            {/* Logo Seal - Premium Badge */}
-            <div className="relative flex-shrink-0">
-              {/* Outer glow ring */}
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-[#c9a227]/40 to-[#c9a227]/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              {/* Main seal container */}
-              <div className="relative w-16 h-16 rounded-full border-2 border-[#c9a227]/80 bg-[#000000] flex items-center justify-center overflow-hidden shadow-lg shadow-[#c9a227]/40 group-hover:shadow-[#c9a227]/60 group-hover:border-[#e5c158] transition-all duration-300">
-                
-                {/* Image seal - fills completely with radial mask */}
-                <img
-                  src="/images/logo/logo.png"
-                  alt="FRAY RENT CAR"
-                  className="w-full h-full object-cover"
-                  style={{
-                    clipPath: 'circle(50%)',
-                    filter: 'brightness(1.05) contrast(1.2) saturate(1.1)',
-                    objectPosition: 'center'
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = 'none'
-                    e.target.nextElementSibling.style.display = 'flex'
-                  }}
-                />
-                
-                {/* Premium gradient overlay - subtle shine */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#c9a227]/8 via-transparent to-[#000000]/20 pointer-events-none" />
-                
-                {/* Fallback badge */}
-                <div className="hidden w-full h-full rounded-full bg-gradient-to-br from-[#d4af37] to-[#c9a227] flex items-center justify-center text-black font-black text-lg leading-none">
-                  FR
-                </div>
-              </div>
-            </div>
-            
-            {/* Branding Text - Unified with Logo */}
-            <div className="hidden sm:flex flex-col justify-center -space-y-0.5">
-              <span className="text-white font-black text-xl tracking-[0.08em] leading-tight">
-                FRAY
-              </span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[#c9a227] font-black text-[10px] tracking-[0.15em] uppercase leading-none">
-                  RENT
-                </span>
-                <span className="text-[#c9a227]/70 font-bold text-[10px] tracking-[0.15em] uppercase leading-none">
-                  CAR
-                </span>
-              </div>
-            </div>
-          </Link>
+    <header className="fixed inset-x-0 top-0 z-[100] border-b border-[#d4af37]/20 bg-[#030303]/88 backdrop-blur-xl supports-[backdrop-filter]:bg-[#030303]/72">
+      <div className="mx-auto flex h-[98px] max-w-7xl items-center justify-between px-4 sm:h-[120px] sm:px-6 lg:h-[138px] lg:px-8">
+        <Link to="/" className="group flex min-w-0 items-center gap-4 sm:gap-5" onClick={() => setMobileMenuOpen(false)}>
+          <div className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-black sm:h-28 sm:w-28 lg:h-32 lg:w-32">
+            <img
+              src="/images/logo/logo-circle-fill.jpg"
+              alt="FRAY RENT CAR"
+              className="h-full w-full rounded-full object-cover object-center brightness-110 contrast-125"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.nextElementSibling.style.display = 'grid'
+              }}
+            />
+            <span className="hidden h-full w-full place-items-center rounded-full bg-gold-gradient text-sm font-black text-black">FR</span>
+          </div>
 
-          {/* Menú centrado */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <div className="leading-none">
+            <p className="text-[24px] font-black tracking-[0.18em] text-white sm:text-4xl lg:text-[40px]">FRAY</p>
+            <p className="mt-1.5 text-[12px] font-black tracking-[0.36em] text-[#d4af37] sm:text-base lg:text-[17px]">RENT CAR</p>
+          </div>
+        </Link>
+
+        <nav className="hidden items-center rounded-full border border-white/10 bg-white/[0.035] px-2 py-1 lg:flex">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.to}
+              className={({ isActive }) =>
+                `rounded-full px-4 py-2 text-[12px] font-bold uppercase tracking-[0.18em] transition-all ${
+                  isActive
+                    ? 'bg-[#d4af37] text-black shadow-[0_0_22px_rgba(212,175,55,0.28)]'
+                    : 'text-zinc-300 hover:bg-white/5 hover:text-[#d4af37]'
+                }`
+              }
+            >
+              {item.name}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="hidden items-center gap-4 lg:flex">
+          <a href="tel:+18090000000" className="flex items-center gap-2 text-sm font-semibold text-zinc-300 transition-colors hover:text-[#d4af37]">
+            <Phone className="h-4 w-4 text-[#d4af37]" />
+            +1 809 000 0000
+          </a>
+          <Link
+            to="/booking"
+            className="inline-flex items-center gap-2 rounded-full bg-gold-gradient px-5 py-3 text-[12px] font-black uppercase tracking-[0.2em] text-black shadow-[0_10px_35px_rgba(212,175,55,0.25)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_45px_rgba(212,175,55,0.36)]"
+          >
+            <Sparkles className="h-4 w-4" />
+            Reservar
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          className="grid h-11 w-11 place-items-center rounded-full border border-[#d4af37]/30 bg-white/[0.04] text-[#d4af37] lg:hidden"
+          onClick={() => setMobileMenuOpen((value) => !value)}
+          aria-label="Abrir menú"
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {mobileMenuOpen && (
+        <div className="border-t border-[#d4af37]/15 bg-[#050505]/98 px-4 pb-5 pt-2 shadow-2xl lg:hidden">
+          <div className="mx-auto max-w-7xl space-y-1">
             {navItems.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.to}
+                onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
-                  `text-[13px] font-medium tracking-wider uppercase transition-all ${
-                    isActive 
-                      ? 'text-[#c9a227]' 
-                      : 'text-gray-300 hover:text-[#c9a227]'
+                  `block rounded-2xl px-4 py-3 text-sm font-bold uppercase tracking-[0.22em] ${
+                    isActive ? 'bg-[#d4af37] text-black' : 'text-zinc-200 hover:bg-white/5 hover:text-[#d4af37]'
                   }`
                 }
               >
                 {item.name}
               </NavLink>
             ))}
-          </nav>
-
-          {/* CTA + Teléfono */}
-          <div className="hidden lg:flex items-center gap-5">
-            <div className="flex items-center gap-2 text-gray-400">
-              <Phone className="w-4 h-4 text-[#c9a227]" />
-              <span className="text-sm">+34 900 123 456</span>
-            </div>
-            <Link 
-              to="/booking" 
-              className="bg-gradient-to-r from-[#c9a227] to-[#d4af37] text-black px-6 py-2.5 text-[13px] font-black tracking-widest hover:from-[#d4af37] hover:to-[#c9a227] transition-all shadow-lg shadow-[#c9a227]/40 hover:shadow-[#c9a227]/60 rounded-lg uppercase"
-            >
-              Reservar
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="lg:hidden text-[#c9a227] p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-      
-      {/* Línea dorada fina inferior */}
-      <div className="h-[1px] bg-gradient-to-r from-transparent via-[#c9a227] to-transparent" />
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#050505] border-t border-[#c9a227]/20">
-          <div className="px-6 py-4 space-y-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.to}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-gray-300 hover:text-[#c9a227] transition-colors py-3 text-sm uppercase tracking-wide"
-              >
-                {item.name}
-              </NavLink>
-            ))}
-            <Link 
-              to="/booking" 
-              className="block bg-[#c9a227] text-black text-center py-3 font-bold mt-4 text-sm uppercase tracking-wide"
+            <Link
+              to="/booking"
+              className="mt-3 block rounded-2xl bg-gold-gradient px-5 py-4 text-center text-sm font-black uppercase tracking-[0.22em] text-black"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Reservar Ahora
+              Reservar ahora
             </Link>
           </div>
         </div>
@@ -145,4 +110,3 @@ function Navbar({ companyName = 'FRAY RENT CAR' }) {
 }
 
 export default Navbar
-

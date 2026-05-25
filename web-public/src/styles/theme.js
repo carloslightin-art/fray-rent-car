@@ -9,8 +9,8 @@ export const theme = {
   },
   business: {
     name: 'FRAY RENT CAR',
-    phone: '+34 600 123 456',
+    phone: '+1 809 000 0000',
     email: 'reservas@frayrentcar.com',
-    address: 'Av. Premium 77, Madrid'
+    address: 'Santo Domingo, República Dominicana'
   }
 }

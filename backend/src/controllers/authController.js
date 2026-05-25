@@ -1,3 +1,4 @@
+const { errorDetails } = require('../utils/safeErrors')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { User } = require('../models')
@@ -10,9 +11,19 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Email y password son obligatorios' })
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error('LOGIN ERROR: JWT_SECRET no está configurado en las variables de entorno')
+      return res.status(500).json({ message: 'Error de configuración del servidor' })
+    }
+
     const user = await User.findOne({ where: { email } })
     if (!user) {
       return res.status(401).json({ message: 'Credenciales inválidas' })
+    }
+
+    if (!user.password) {
+      console.error('LOGIN ERROR: usuario', user.email, 'no tiene password hash en BD')
+      return res.status(500).json({ message: 'Error de autenticación del usuario' })
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -36,7 +47,12 @@ const login = async (req, res) => {
       }
     })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al iniciar sesión', error: error.message })
+    console.error('LOGIN ERROR:', error.message)
+    if (error.message && error.message.includes('secretOrPrivateKey')) {
+      console.error('LOGIN: JWT_SECRET no válido. Configúralo en las variables de entorno.')
+      return res.status(500).json({ message: 'Error de configuración del servidor' })
+    }
+    return res.status(500).json({ message: 'Error al iniciar sesión', ...errorDetails(error) })
   }
 }
 
@@ -52,7 +68,7 @@ const profile = async (req, res) => {
 
     return res.json(user)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener perfil', error: error.message })
+    return res.status(500).json({ message: 'Error al obtener perfil', ...errorDetails(error) })
   }
 }
 

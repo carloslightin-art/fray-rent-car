@@ -166,7 +166,7 @@ function Settings() {
                 value={settings.business_phone}
                 onChange={handleChange}
                 className="input-luxury"
-                placeholder="+34 900 123 456"
+                placeholder="+1 809 000 0000"
               />
             </div>
 

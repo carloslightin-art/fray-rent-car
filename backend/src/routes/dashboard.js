@@ -1,10 +1,13 @@
 const express = require('express')
 const router = express.Router()
-const { 
+const {
   getDashboardMetrics,
   getReservationsReport,
   getClientsReport,
-  getVehiclesReport
+  getVehiclesReport,
+  getReservationsReportPDF,
+  getClientsReportPDF,
+  getVehiclesReportPDF
 } = require('../controllers/dashboardController')
 
 // Middleware
@@ -16,9 +19,15 @@ router.use(authenticate)
 // Métricas del dashboard
 router.get('/metrics', getDashboardMetrics)
 
-// Reportes
+// Reportes JSON
 router.get('/reports/reservations', getReservationsReport)
 router.get('/reports/clients', getClientsReport)
 router.get('/reports/vehicles', getVehiclesReport)
 
+// Reportes PDF
+router.get('/reports/reservations/pdf', getReservationsReportPDF)
+router.get('/reports/clients/pdf', getClientsReportPDF)
+router.get('/reports/vehicles/pdf', getVehiclesReportPDF)
+
 module.exports = router
+

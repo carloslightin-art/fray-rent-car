@@ -20,8 +20,8 @@
 
 | # | Item | Valor Actual | Acción Requerida |
 |---|------|--------------|------------------|
-| 1 | JWT_SECRET | `fray_rent_secret_2026` | Generar nuevo: `openssl rand -base64 32` |
-| 2 | DB_PASS (MySQL) | `root123` | Cambiar a password robusto |
+| 1 | JWT_SECRET | No usar valores reales en documentación | Generar nuevo: `openssl rand -base64 32` |
+| 2 | DB_PASS (MySQL) | No usar valores reales en documentación | Crear password robusto en el servidor |
 | 3 | Passwords usuarios seed | Hasheados en seed-data.sql | Regenerar con bcrypt |
 | 4 | Puertos desarrollo | 5001, 5173, 5174 | Configurar para producción (80, 443) |
 

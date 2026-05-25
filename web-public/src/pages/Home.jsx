@@ -7,13 +7,16 @@ import TrustServices from '../components/TrustServices'
 import Footer from '../components/Footer'
 import { getFeaturedVehicles } from '../services/api'
 import { getWebsiteSection } from '../services/websiteContent'
+import { luxuryVehicles } from '../data/vehicles'
+import { Link } from 'react-router-dom'
+import { ArrowRight, MonitorSmartphone, Database, LayoutDashboard, Smartphone } from 'lucide-react'
 
 function Home() {
-  const [fleetVehicles, setFleetVehicles] = useState([])
+  const [fleetVehicles, setFleetVehicles] = useState(luxuryVehicles)
   const [footerData, setFooterData] = useState({
-    phone: '+34 900 123 456',
+    phone: '+1 809 000 0000',
     email: 'info@frayrentcar.com',
-    address: 'Madrid, España',
+    address: 'Santo Domingo, República Dominicana',
     copyright: '© 2025 FRAY RENT CAR. Todos los derechos reservados.'
   })
   const [loading, setLoading] = useState(true)
@@ -22,36 +25,32 @@ function Home() {
     const loadData = async () => {
       try {
         setLoading(true)
-        
-        // Cargar vehículos destacados
         try {
           const vehiclesRes = await getFeaturedVehicles()
           if (vehiclesRes.data && vehiclesRes.data.length > 0) {
-            const formatted = vehiclesRes.data.map(v => ({
+            setFleetVehicles(vehiclesRes.data.map((v) => ({
               id: v.id,
               name: `${v.brand} ${v.model}`,
               price_per_day: v.price_per_day,
               image: v.image_url
-            }))
-            setFleetVehicles(formatted)
+            })))
           }
-        } catch (err) {
-          console.log('Featured vehicles load skipped')
+        } catch (_err) {
+          setFleetVehicles(luxuryVehicles)
         }
-        
-        // Cargar datos del footer desde la sección 'footer'
+
         try {
           const footerRes = await getWebsiteSection('footer')
           if (footerRes.data) {
-            setFooterData(prev => ({
+            setFooterData((prev) => ({
               phone: footerRes.data.phone?.value || prev.phone,
               email: footerRes.data.email?.value || prev.email,
               address: footerRes.data.address?.value || prev.address,
               copyright: footerRes.data.copyright?.value || prev.copyright
             }))
           }
-        } catch (err) {
-          console.log('Footer data load skipped - using defaults')
+        } catch (_err) {
+          // Mantener datos por defecto si la API no responde.
         }
       } finally {
         setLoading(false)
@@ -62,49 +61,74 @@ function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c9a227]"></div>
+      <div className="grid min-h-screen place-items-center bg-[#050505]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#d4af37] border-t-transparent" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#050505]">
+    <div className="min-h-screen bg-[#030303] text-white">
       <Navbar />
       <Hero />
       <BookingForm />
-      
-      {/* NUESTRA FLOTA */}
-      <section className="py-24 border-t border-[#c9a227]/15 bg-[#050505]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          
-          {/* Título */}
-          <div className="text-center mb-20">
-            <h2 className="text-lg sm:text-xl font-bold uppercase tracking-[0.35em] text-[#c9a227] mb-6">
-              Nuestra Flota
-            </h2>
-            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#c9a227] to-transparent mx-auto" />
+
+      <section className="relative overflow-hidden bg-[#030303] px-4 pb-16 pt-8 sm:px-6 sm:pb-20 lg:px-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(212,175,55,0.1),transparent_30%)]" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.35em] text-[#d4af37]">Nuestra flota</p>
+              <h2 className="mt-3 max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">Vehículos listos para reservar desde cualquier pantalla</h2>
+            </div>
+            <Link to="/fleet" className="inline-flex items-center gap-3 rounded-2xl border border-[#d4af37]/35 px-5 py-4 text-sm font-black uppercase tracking-[0.2em] text-[#d4af37] transition hover:bg-[#d4af37] hover:text-black lg:mb-2">
+              Ver toda la flota
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          
-          {/* Grid de vehículos */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {fleetVehicles.map((vehicle) => (
+
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {fleetVehicles.slice(0, 3).map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
           </div>
         </div>
       </section>
 
+      <section className="relative overflow-hidden border-y border-[#d4af37]/15 bg-[#080808] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_45%,rgba(212,175,55,0.16),transparent_34%)]" />
+        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.35em] text-[#d4af37]">Web + App + Admin</p>
+            <h2 className="mt-4 text-4xl font-black leading-tight text-white sm:text-5xl">Una experiencia que parece aplicación, pero corre en web</h2>
+            <p className="mt-5 max-w-xl text-base leading-8 text-zinc-400">La interfaz se está preparando para que funcione bien en computadora, tablet y móvil: reserva rápida, flota visual y panel conectado al sistema.</p>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {[
+                [MonitorSmartphone, 'Responsive real', 'Diseño adaptado a móvil y escritorio.'],
+                [LayoutDashboard, 'Admin web', 'Gestión visual de reservas y flota.'],
+                [Database, 'Datos conectados', 'API y base de datos como fuente real.'],
+                [Smartphone, 'Experiencia app', 'Mobile-first sin instalar nada.']
+              ].map(([Icon, title, text]) => (
+                <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                  <Icon className="h-5 w-5 text-[#d4af37]" />
+                  <h3 className="mt-3 font-black text-white">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative aspect-square min-h-[360px] overflow-hidden rounded-[2rem] border border-[#d4af37]/20 bg-black shadow-[0_35px_120px_rgba(0,0,0,0.48)] sm:min-h-[520px]">
+            <img src="/images/ui/phone-mockup-square.jpg" alt="App FRAY RENT CAR" className="absolute inset-0 h-full w-full object-cover object-center" />
+          </div>
+        </div>
+      </section>
+
       <TrustServices />
-      <Footer 
-        phone={footerData.phone}
-        email={footerData.email}
-        address={footerData.address}
-        copyright={footerData.copyright}
-      />
+      <Footer {...footerData} />
     </div>
   )
 }
 
 export default Home
-

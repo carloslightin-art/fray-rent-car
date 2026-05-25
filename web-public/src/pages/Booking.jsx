@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import BookingForm from '../components/BookingForm'
 import Footer from '../components/Footer'
@@ -8,6 +8,7 @@ import { FaShieldAlt, FaRegClock, FaCarSide } from 'react-icons/fa'
 
 function Booking() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,6 +23,20 @@ function Booking() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  // Pre-fill form with URL params (from Home BookingForm)
+  useEffect(() => {
+    const params = {
+      pickup_date: searchParams.get('pickup_date') || '',
+      return_date: searchParams.get('return_date') || '',
+      pickup_location: searchParams.get('pickup_location') || '',
+      drop_location: searchParams.get('drop_location') || '',
+      category: searchParams.get('category') || ''
+    }
+    if (Object.values(params).some(v => v !== '')) {
+      setFormData(prev => ({ ...prev, ...params }))
+    }
+  }, [searchParams])
 
   const handleChange = (e) => {
     setFormData({
@@ -63,14 +78,38 @@ function Booking() {
 
       const clientId = clientResponse.data.id
 
-      // Step 2: Obtener vehicle por category (simplificado, usar primer vehículo)
-      const vehiclesResponse = await getVehicles()
-      const vehicleId = vehiclesResponse.data[0]?.id || 1 // fallback a primer vehículo
+      // Step 2: Resolve vehicle — prefer URL param, then category match, then first active
+      const urlVehicleId = searchParams.get('vehicle')
+      let vehicleId
 
-      // Step 3: Calcular total_price
-      const days = calculateDays()
-      const vehiclePrice = vehiclesResponse.data[0]?.price_per_day || 100
-      const totalPrice = days * vehiclePrice
+      if (urlVehicleId) {
+        vehicleId = parseInt(urlVehicleId)
+      } else if (formData.category) {
+        const vehiclesResponse = await getVehicles()
+        const matched = vehiclesResponse.data.find(
+          v => v.category === formData.category && v.is_active !== false
+        )
+        vehicleId = matched?.id
+        if (!vehicleId) {
+          // Fallback to first active vehicle if category has no matches
+          vehicleId = vehiclesResponse.data.find(v => v.is_active !== false)?.id
+        }
+      } else {
+        const vehiclesResponse = await getVehicles()
+        vehicleId = vehiclesResponse.data.find(v => v.is_active !== false)?.id
+      }
+
+      if (!vehicleId) {
+        setError('No hay vehículos disponibles en este momento. Contacta con nosotros por teléfono.')
+        setLoading(false)
+        return
+      }
+
+      // Step 3: Get vehicle price for total calculation
+      const vehiclesResponse = await getVehicles()
+      const vehicle = vehiclesResponse.data.find(v => v.id === vehicleId)
+      const vehiclePrice = vehicle?.price_per_day || 100
+      const totalPrice = calculateDays() * vehiclePrice
 
       // Step 4: Crear reserva
       const reservationData = {
@@ -111,21 +150,21 @@ function Booking() {
     <div className="min-h-screen bg-luxuryBlack">
       <Navbar />
 
-      <section className="relative pt-20 pb-8 overflow-hidden">
+      <section className="relative overflow-hidden px-4 pb-8 pt-32 sm:px-6 sm:pt-36 lg:px-8 lg:pt-40">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#060606] to-luxuryBlack" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(212,175,55,0.1),transparent_50%)]" />
         
         <div className="relative section-wrap">
           <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-luxuryGold/50" />
-              <span className="text-luxuryGold text-xs uppercase tracking-[0.3em] font-medium">Reserva Premium</span>
-              <div className="h-px w-16 bg-gradient-to-l from-transparent to-luxuryGold/50" />
+            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-luxuryGold/50" />
+              <span className="text-luxuryGold text-[10px] sm:text-xs uppercase tracking-[0.3em] font-medium">Reserva Premium</span>
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-luxuryGold/50" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-light text-luxuryText">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light text-luxuryText">
               Configura tu <span className="font-bold text-luxuryGold">Experiencia</span>
             </h1>
-            <p className="text-luxuryMuted text-sm mt-4 max-w-xl mx-auto">
+            <p className="text-luxuryMuted text-xs sm:text-sm mt-3 sm:mt-4 max-w-xl mx-auto px-4">
               Completa todos los datos para confirmar disponibilidad y recibir tu cotización inmediata.
             </p>
           </div>
@@ -160,8 +199,8 @@ function Booking() {
         </div>
       )}
 
-      <section className="section-wrap pb-16">
-        <div className="grid gap-4 md:grid-cols-3">
+      <section className="section-wrap pb-12 sm:pb-16">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
           <div className="rounded-xl border border-luxuryGold/20 bg-[#0a0a0a] p-6 text-center hover:border-luxuryGold/40 transition-colors">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full border border-luxuryGold/30 flex items-center justify-center">
               <FaShieldAlt className="text-luxuryGold text-xl" />

@@ -1,139 +1,74 @@
 import { Link } from 'react-router-dom'
-import { Phone, Mail, MapPin } from 'lucide-react'
+import { Phone, Smartphone, ArrowRight } from 'lucide-react'
 
-function Footer({ 
-  phone = '+34 900 123 456',
-  email = 'info@frayrentcar.com', 
-  address = 'Madrid, España',
+function Footer({
+  phone = '+1 809 000 0000',
+  phone2 = '+1 829 000 0000',
   copyright = '© 2025 FRAY RENT CAR. Todos los derechos reservados.'
 }) {
+  const phones = [
+    { label: 'Teléfono directo', value: phone, Icon: Phone },
+    { label: 'WhatsApp / reservas', value: phone2, Icon: Smartphone }
+  ]
+
   return (
-    <footer className="bg-[#030303] border-t border-[#c9a227]/30">
-      {/* Línea superior decorativa */}
-      <div className="h-[2px] bg-gradient-to-r from-transparent via-[#c9a227]/30 to-transparent" />
-      
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20">
-        {/* Grid principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start mb-16">
-          
-          {/* BRANDING - Izquierda mejorado */}
-          <div className="flex flex-col items-start">
-            {/* Logo + Nombre - Compact pero elegante */}
-            <Link to="/" className="flex items-start gap-4 mb-12 group">
-              {/* Logo Circle - Consistente con Navbar */}
-              <div className="relative flex-shrink-0">
-                {/* Circle limpio */}
-                <div className="relative w-20 h-20 rounded-full border-2 border-[#c9a227]/60 bg-[#0a0a0a] flex items-center justify-center overflow-hidden shadow-lg shadow-[#c9a227]/25 group-hover:shadow-[#c9a227]/40 transition-all">
-                  <img
-                    src="/images/logo/logo.png"
-                    alt="FRAY RENT CAR"
-                    className="w-14 h-14 object-cover"
-                    style={{
-                      clipPath: 'circle(50%)',
-                      filter: 'brightness(1) contrast(1.1)'
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = 'none'
-                      e.target.nextElementSibling.style.display = 'flex'
-                    }}
-                  />
-                  {/* Fallback */}
-                  <div className="hidden w-14 h-14 rounded-full bg-gradient-to-br from-[#c9a227] to-[#a68220] flex items-center justify-center text-black font-black text-xs">
-                    FR
-                  </div>
-                </div>
+    <footer className="relative overflow-hidden border-t border-[#d4af37]/20 bg-[#020202]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_8%,rgba(212,175,55,0.18),transparent_34%)]" />
+      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+        <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div>
+            <Link to="/" className="inline-flex items-center gap-5">
+              <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-black sm:h-24 sm:w-24">
+                <img src="/images/logo/logo-circle-fill.jpg" alt="FRAY RENT CAR" className="h-full w-full rounded-full object-cover object-center brightness-110 contrast-125" />
               </div>
-              
-              {/* Branding text - más premium */}
-              <div className="flex flex-col justify-center">
-                <h2 className="text-3xl font-black text-white tracking-widest leading-tight">FRAY</h2>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <p className="text-[#c9a227] text-base font-black uppercase tracking-widest">RENT</p>
-                  <p className="text-[#c9a227]/60 text-base font-bold uppercase tracking-widest">CAR</p>
-                </div>
-                <p className="text-gray-500 text-xs uppercase tracking-[0.2em] font-light mt-2">Premium Rental</p>
+              <div>
+                <p className="text-4xl font-black tracking-[0.2em] text-white sm:text-5xl">FRAY</p>
+                <p className="mt-2 text-sm font-black uppercase tracking-[0.38em] text-[#d4af37] sm:text-base">Rent Car</p>
               </div>
             </Link>
-
-            {/* Descripción breve */}
-            <p className="text-gray-400 text-sm font-light leading-relaxed mb-8 max-w-xs">
-              Experiencia de alquiler de vehículos premium en Madrid. Libertad, lujo y confort en cada viaje.
+            <p className="mt-7 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">
+              Alquiler premium, flota seleccionada y experiencia digital optimizada para móvil y escritorio.
             </p>
-
-            {/* Contacto - mejor estructura */}
-            <div className="space-y-4">
-              <p className="text-xs uppercase tracking-widest text-[#c9a227] font-bold mb-4">Contacto</p>
-              
-              <a 
-                href={`tel:${phone}`} 
-                className="flex items-center gap-3 text-gray-400 hover:text-[#c9a227] transition-colors group/contact"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#c9a227]/10 group-hover/contact:bg-[#c9a227]/20 flex items-center justify-center transition-colors">
-                  <Phone className="w-4 h-4 text-[#c9a227]" />
-                </div>
-                <span className="text-sm font-medium">{phone}</span>
-              </a>
-              
-              <a 
-                href={`mailto:${email}`} 
-                className="flex items-center gap-3 text-gray-400 hover:text-[#c9a227] transition-colors group/contact"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#c9a227]/10 group-hover/contact:bg-[#c9a227]/20 flex items-center justify-center transition-colors">
-                  <Mail className="w-4 h-4 text-[#c9a227]" />
-                </div>
-                <span className="text-sm font-medium">{email}</span>
-              </a>
-              
-              <div className="flex items-center gap-3 text-gray-400">
-                <div className="w-8 h-8 rounded-full bg-[#c9a227]/10 flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-[#c9a227]" />
-                </div>
-                <span className="text-sm font-medium">{address}</span>
-              </div>
-            </div>
+            <Link to="/booking" className="mt-7 inline-flex items-center gap-3 rounded-2xl bg-gold-gradient px-6 py-4 text-sm font-black uppercase tracking-[0.2em] text-black shadow-[0_18px_45px_rgba(212,175,55,0.23)]">
+              Reservar ahora
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          {/* MOCKUP - Derecha con presencia */}
-          <div className="relative flex justify-end">
-            <div className="relative group">
-              {/* Glow backdrop */}
-              <div className="absolute -inset-8 bg-gradient-to-br from-[#c9a227]/15 to-[#c9a227]/5 rounded-3xl blur-3xl -z-10 group-hover:blur-4xl transition-all duration-300" />
-              
-              {/* Contenedor mockup elegante */}
-              <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] p-8 rounded-2xl border border-[#c9a227]/25 shadow-2xl shadow-[#c9a227]/15 group-hover:border-[#c9a227]/50 group-hover:shadow-[#c9a227]/35 transition-all">
-                
-                {/* Línea decorativa superior */}
-                <div className="absolute top-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[#c9a227]/50 to-transparent" />
-                
-                {/* Imagen mockup */}
-                <img 
-                  src="/images/ui/phone-mockup.png"
-                  alt="App FRAY RENT CAR"
-                  className="h-64 w-auto object-contain mx-auto group-hover:scale-105 transition-transform duration-500"
-                />
-                
-                {/* Línea decorativa inferior */}
-                <div className="absolute bottom-0 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-[#c9a227]/50 to-transparent" />
+          <div className="rounded-[2rem] border border-[#d4af37]/28 bg-[#070707]/90 p-4 shadow-[0_28px_95px_rgba(0,0,0,0.5),0_0_70px_rgba(212,175,55,0.08)] sm:p-5 lg:p-6">
+            <div className="mb-4 flex items-center gap-3 border-b border-white/10 pb-4 sm:mb-5 sm:gap-4 sm:pb-5">
+              <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-black sm:h-16 sm:w-16">
+                <img src="/images/logo/logo-circle-fill.jpg" alt="FRAY RENT CAR" className="h-full w-full rounded-full object-cover object-center" />
               </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#d4af37] sm:text-[11px] sm:tracking-[0.32em]">Contacto rápido</p>
+                <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">Llámanos ahora</h3>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              {phones.map(({ label, value, Icon }) => (
+                <a
+                  key={label}
+                  href={`tel:${value.replace(/\s/g, '')}`}
+                  className="group flex min-w-0 items-center gap-3 rounded-2xl border border-[#d4af37]/18 bg-[#d4af37]/[0.055] p-4 transition hover:border-[#d4af37]/55 hover:bg-[#d4af37]/12 sm:p-5 md:flex-col md:items-start md:justify-between md:gap-4"
+                >
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#d4af37] text-black shadow-[0_12px_30px_rgba(212,175,55,0.22)] sm:h-12 sm:w-12">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 group-hover:text-[#d4af37] sm:text-[10px] sm:tracking-[0.24em]">{label}</span>
+                    <span className="mt-1 block whitespace-nowrap text-[clamp(1.02rem,2.1vw,1.45rem)] font-black tracking-wide text-white">{value}</span>
+                  </span>
+                </a>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Línea separadora */}
-        <div className="h-[1px] bg-gradient-to-r from-transparent via-[#c9a227]/20 to-transparent mb-8" />
-
-        {/* Footer inferior */}
-        <div className="text-center">
-          <p className="text-gray-500 text-xs font-light mb-3 tracking-wide">
-            {copyright}
-          </p>
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-8 h-[1px] bg-[#c9a227]/30" />
-            <p className="text-[#c9a227] text-xs font-semibold uppercase tracking-widest">
-              Premium Rental Experience
-            </p>
-            <div className="w-8 h-[1px] bg-[#c9a227]/30" />
-          </div>
+        <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-zinc-500 sm:flex sm:items-center sm:justify-between sm:text-left">
+          <p>{copyright}</p>
+          <p className="mt-3 font-black uppercase tracking-[0.24em] text-[#d4af37] sm:mt-0">Luxury rental system</p>
         </div>
       </div>
     </footer>
@@ -141,4 +76,3 @@ function Footer({
 }
 
 export default Footer
-

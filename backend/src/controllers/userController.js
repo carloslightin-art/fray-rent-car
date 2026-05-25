@@ -1,3 +1,4 @@
+const { errorDetails } = require('../utils/safeErrors')
 const bcrypt = require('bcryptjs')
 const { User } = require('../models')
 
@@ -10,7 +11,7 @@ const listUsers = async (_req, res) => {
     })
     return res.json(users)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al listar usuarios', error: error.message })
+    return res.status(500).json({ message: 'Error al listar usuarios', ...errorDetails(error) })
   }
 }
 
@@ -25,7 +26,7 @@ const getUserById = async (req, res) => {
     }
     return res.json(user)
   } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener usuario', error: error.message })
+    return res.status(500).json({ message: 'Error al obtener usuario', ...errorDetails(error) })
   }
 }
 
@@ -70,7 +71,7 @@ const createUser = async (req, res) => {
       created_at: user.created_at
     })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al crear usuario', error: error.message })
+    return res.status(500).json({ message: 'Error al crear usuario', ...errorDetails(error) })
   }
 }
 
@@ -115,7 +116,7 @@ const updateUser = async (req, res) => {
       created_at: user.created_at
     })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al actualizar usuario', error: error.message })
+    return res.status(500).json({ message: 'Error al actualizar usuario', ...errorDetails(error) })
   }
 }
 
@@ -140,7 +141,7 @@ const deleteUser = async (req, res) => {
     await user.destroy()
     return res.json({ message: 'Usuario eliminado correctamente' })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al eliminar usuario', error: error.message })
+    return res.status(500).json({ message: 'Error al eliminar usuario', ...errorDetails(error) })
   }
 }
 
@@ -164,7 +165,7 @@ const changePassword = async (req, res) => {
 
     return res.json({ message: 'Contraseña actualizada correctamente' })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al cambiar contraseña', error: error.message })
+    return res.status(500).json({ message: 'Error al cambiar contraseña', ...errorDetails(error) })
   }
 }
 
@@ -196,7 +197,7 @@ const toggleActive = async (req, res) => {
       }
     })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al cambiar estado', error: error.message })
+    return res.status(500).json({ message: 'Error al cambiar estado', ...errorDetails(error) })
   }
 }
 

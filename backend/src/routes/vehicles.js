@@ -19,8 +19,8 @@ router.get('/active', listActiveVehicles)
 router.get('/featured', listFeaturedVehicles)
 
 // Rutas para admin
-router.get('/', listVehicles)
-router.get('/:id', getVehicleById)
+router.get('/', authenticate, authorizeRoles('owner', 'worker'), listVehicles)
+router.get('/:id', authenticate, authorizeRoles('owner', 'worker'), getVehicleById)
 
 // Rutas protegidas (solo owner)
 router.post('/', authenticate, authorizeRoles('owner'), createVehicle)

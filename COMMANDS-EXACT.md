@@ -131,7 +131,7 @@ railway variables list
 # Desde carpeta backend, agregar variables:
 
 railway variables set NODE_ENV=production
-railway variables set JWT_SECRET="tu-clave-super-segura-minimo-32-caracteres-2024-fray-rent"
+railway variables set JWT_SECRET="$(openssl rand -base64 32)"
 railway variables set JWT_EXPIRES_IN="8h"
 railway variables set CORS_ORIGIN="https://fray-rent-car.com,https://admin.fray-rent-car.com"
 

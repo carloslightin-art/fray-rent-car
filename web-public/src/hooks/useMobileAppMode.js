@@ -20,8 +20,10 @@ function useMobileAppMode() {
   useEffect(() => {
     const update = () => {
       const params = new URLSearchParams(window.location.search)
-      const previewMode = params.get('app') === '1'
-      setIsMobileAppMode(isSmallViewport() && (isStandaloneDisplay() || previewMode))
+      const forceDesktop = params.get('desktop') === '1'
+      // Carlos revisa la web desde navegador móvil/in-app browser; debe ver la
+      // experiencia tipo app aunque no esté instalada como PWA.
+      setIsMobileAppMode(isSmallViewport() && !forceDesktop)
     }
 
     update()

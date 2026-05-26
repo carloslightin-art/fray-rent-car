@@ -19,9 +19,24 @@ const navItems = [
   { label: 'Perfil', icon: UserRound, to: '/contact' }
 ]
 
+const formatVehicleName = (name = 'Flota premium') =>
+  name
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\b\p{L}/gu, (letter) => letter.toUpperCase())
+
+const formatPrice = (price = 50) => {
+  const value = Number(price)
+  if (!Number.isFinite(value)) return '50'
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
+}
+
 function MobileAppHome({ vehicles = [], footerData = {} }) {
   const featured = vehicles.slice(0, 3)
   const heroVehicle = featured[1] || featured[0]
+  const heroName = formatVehicleName(heroVehicle?.name)
+  const heroPrice = formatPrice(heroVehicle?.price_per_day)
   const phone = footerData.phone || '+1 809 000 0000'
 
   return (
@@ -45,7 +60,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
               <div className="grid h-[74px] w-[74px] place-items-center overflow-hidden rounded-full bg-black shadow-[0_0_0_1px_rgba(212,175,55,0.55),0_18px_55px_rgba(212,175,55,0.18)]">
                 <img src="/images/logo/logo-circle-fill.jpg" alt="FRAY RENT CAR" className="h-full w-full object-cover object-center" />
               </div>
-              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.32em] text-[#d4af37]">Luxury rent</p>
+              <p className="mt-2 text-[9px] font-black uppercase tracking-[0.32em] text-[#d4af37]">FRAY RD</p>
             </div>
 
             <a
@@ -78,7 +93,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                 <div className="relative aspect-[1.45] overflow-hidden rounded-[1.55rem] bg-black">
                   <img
                     src={getVehicleImageUrl(heroVehicle?.image, heroVehicle?.id) || getFallbackVehicleImageUrl(heroVehicle?.id)}
-                    alt={heroVehicle?.name || 'Vehículo premium'}
+                    alt={heroName}
                     className="absolute inset-0 h-full w-full object-cover object-center"
                     onError={(e) => {
                       e.currentTarget.src = getFallbackVehicleImageUrl(heroVehicle?.id)
@@ -88,11 +103,11 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                   <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#d4af37]">Vehículo destacado</p>
-                      <h2 className="mt-1 text-lg font-black text-white">{heroVehicle?.name || 'Flota premium'}</h2>
+                      <h2 className="mt-1 text-lg font-black text-white">{heroName}</h2>
                     </div>
                     <div className="rounded-2xl bg-[#d4af37] px-3 py-2 text-right text-black shadow-[0_12px_35px_rgba(212,175,55,0.28)]">
                       <p className="text-[10px] font-black uppercase">Desde</p>
-                      <p className="text-lg font-black leading-none">${heroVehicle?.price_per_day || 50}</p>
+                      <p className="text-lg font-black leading-none">${heroPrice}</p>
                     </div>
                   </div>
                 </div>
@@ -148,16 +163,16 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                     <div className="relative h-[92px] overflow-hidden bg-black">
                       <img
                         src={getVehicleImageUrl(vehicle.image, vehicle.id)}
-                        alt={vehicle.name}
+                        alt={formatVehicleName(vehicle.name)}
                         className="h-full w-full object-cover object-center"
                         onError={(e) => {
                           e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
                         }}
                       />
-                      <div className="absolute right-2 top-2 rounded-full bg-black/72 px-2 py-1 text-[10px] font-black text-[#d4af37]">${vehicle.price_per_day}/d</div>
+                      <div className="absolute right-2 top-2 rounded-full bg-black/72 px-2 py-1 text-[10px] font-black text-[#d4af37]">${formatPrice(vehicle.price_per_day)}/d</div>
                     </div>
                     <div className="p-3">
-                      <h3 className="truncate text-sm font-black text-white">{vehicle.name}</h3>
+                      <h3 className="truncate text-sm font-black text-white">{formatVehicleName(vehicle.name)}</h3>
                       <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-400"><ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" /> Confirmación rápida</p>
                     </div>
                   </Link>

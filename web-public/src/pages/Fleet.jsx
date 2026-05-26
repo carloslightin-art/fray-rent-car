@@ -24,7 +24,11 @@ function Fleet() {
               id: v.id,
               name: `${v.brand} ${v.model}`,
               price_per_day: v.price_per_day,
-              image: v.image_url
+              image: v.image_url,
+              gallery_images: v.gallery_images || [],
+              seats: v.seats || 5,
+              vehicle_type: v.vehicle_type || v.category || 'Económico',
+              insurance_included: v.insurance_included !== false
             }))
           setVehiclesState(mappedVehicles.length ? mappedVehicles : luxuryVehicles)
         }

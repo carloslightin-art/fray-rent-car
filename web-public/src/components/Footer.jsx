@@ -68,7 +68,7 @@ function Footer({
 
         <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-zinc-500 sm:flex sm:items-center sm:justify-between sm:text-left">
           <p>{copyright}</p>
-          <p className="mt-3 font-black uppercase tracking-[0.24em] text-[#d4af37] sm:mt-0">Luxury rental system</p>
+          <p className="mt-3 font-black uppercase tracking-[0.24em] text-[#d4af37] sm:mt-0">Sistema de alquiler premium</p>
         </div>
       </div>
     </footer>

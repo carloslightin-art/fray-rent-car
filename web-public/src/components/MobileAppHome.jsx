@@ -10,7 +10,7 @@ import {
   Sparkles,
   UserRound
 } from 'lucide-react'
-import { getFallbackVehicleImageUrl, getVehicleImageUrl } from '../utils/imageUtils'
+import { getFallbackVehicleImageUrl, getVehicleGalleryUrls } from '../utils/imageUtils'
 
 const navItems = [
   { label: 'Inicio', icon: Home, to: '/' },
@@ -37,6 +37,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
   const heroVehicle = featured[1] || featured[0]
   const heroName = formatVehicleName(heroVehicle?.name)
   const heroPrice = formatPrice(heroVehicle?.price_per_day)
+  const heroGallery = getVehicleGalleryUrls(heroVehicle).slice(0, 3)
   const phone = footerData.phone || '+1 809 000 0000'
 
   return (
@@ -92,7 +93,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
               <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/18 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015))] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
                 <div className="relative aspect-[1.45] overflow-hidden rounded-[1.55rem] bg-black">
                   <img
-                    src={getVehicleImageUrl(heroVehicle?.image, heroVehicle?.id) || getFallbackVehicleImageUrl(heroVehicle?.id)}
+                    src={heroGallery[0] || getFallbackVehicleImageUrl(heroVehicle?.id)}
                     alt={heroName}
                     className="absolute inset-0 h-full w-full object-cover object-center"
                     onError={(e) => {
@@ -110,6 +111,21 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                       <p className="text-lg font-black leading-none">${heroPrice}</p>
                     </div>
                   </div>
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {heroGallery.map((url, index) => (
+                    <div key={`${url}-${index}`} className="h-14 overflow-hidden rounded-xl border border-white/10 bg-black">
+                      <img
+                        src={url}
+                        alt={`${heroName} foto ${index + 1}`}
+                        className="h-full w-full object-cover object-center"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null
+                          e.currentTarget.src = getFallbackVehicleImageUrl((heroVehicle?.id || 1) + index)
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -157,6 +173,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                 {featured.map((vehicle, index) => {
                   const vehicleName = formatVehicleName(vehicle.name)
                   const vehiclePrice = formatPrice(vehicle.price_per_day)
+                  const vehicleGallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
                   return (
                     <article
                       key={`${vehicle.id}-${index}`}
@@ -165,7 +182,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                       <Link to={`/booking?vehicle_id=${vehicle.id}`} className="block">
                         <div className="relative h-[168px] overflow-hidden bg-black">
                           <img
-                            src={getVehicleImageUrl(vehicle.image, vehicle.id)}
+                            src={vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
                             alt={vehicleName}
                             className="h-full w-full object-cover object-center"
                             onError={(e) => {
@@ -180,9 +197,31 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                         </div>
                       </Link>
                       <div className="grid gap-3 p-4">
+                        {vehicleGallery.length > 1 && (
+                          <div className="grid grid-cols-3 gap-2">
+                            {vehicleGallery.map((url, photoIndex) => (
+                              <div key={`${url}-${photoIndex}`} className="h-14 overflow-hidden rounded-xl border border-white/10 bg-black">
+                                <img
+                                  src={url}
+                                  alt={`${vehicleName} foto ${photoIndex + 1}`}
+                                  className="h-full w-full object-cover object-center"
+                                  onError={(e) => {
+                                    e.currentTarget.onerror = null
+                                    e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id + photoIndex)
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <div>
                           <h3 className="text-lg font-black text-white">{vehicleName}</h3>
-                          <p className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-400">
+                          <div className="mt-2 grid grid-cols-3 gap-2 text-[10px] font-black uppercase tracking-[0.08em] text-zinc-300">
+                            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.seats || 5} plazas</span>
+                            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.vehicle_type || 'Auto'}</span>
+                            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.insurance_included === false ? 'Seguro opc.' : 'Seguro'}</span>
+                          </div>
+                          <p className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-400">
                             <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" /> Confirmación rápida
                           </p>
                         </div>

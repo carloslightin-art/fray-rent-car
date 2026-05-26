@@ -6,6 +6,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const { sequelize } = require('./models')
+const { ensureVehicleSchema } = require('./utils/ensureVehicleSchema')
 
 const authRoutes = require('./routes/auth')
 const vehicleRoutes = require('./routes/vehicles')
@@ -65,7 +66,17 @@ app.use('/api/auth/login', authLimiter)
 app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true, limit: '5mb' }))
 
-// Archivos estáticos: uploads protegidos con auth
+// Fotos comerciales de vehículos: públicas de solo lectura para que la web pública pueda mostrarlas.
+app.use('/uploads/vehicles', express.static(path.join(__dirname, '../uploads/vehicles'), {
+  dotfiles: 'deny',
+  fallthrough: false,
+  setHeaders: (res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Cache-Control', 'public, max-age=86400')
+  }
+}))
+
+// Resto de uploads protegido con auth
 const { authenticate } = require('./middleware/auth')
 app.use('/uploads', authenticate, express.static(path.join(__dirname, '../uploads'), {
   dotfiles: 'deny',
@@ -184,6 +195,7 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 20) {
 app.listen(PORT, async () => {
   try {
     await sequelize.authenticate()
+    await ensureVehicleSchema()
     console.log(`✅ Servidor corriendo en http://localhost:${PORT}`)
     console.log(`✅ MySQL conectado: ${process.env.DB_NAME}@${process.env.DB_HOST}`)
     console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`)

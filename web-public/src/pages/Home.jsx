@@ -35,7 +35,11 @@ function Home() {
               id: v.id,
               name: `${v.brand} ${v.model}`,
               price_per_day: v.price_per_day,
-              image: v.image_url
+              image: v.image_url,
+              gallery_images: v.gallery_images || [],
+              seats: v.seats || 5,
+              vehicle_type: v.vehicle_type || v.category || 'Económico',
+              insurance_included: v.insurance_included !== false
             }))
             const apiNames = new Set(apiVehicles.map((vehicle) => vehicle.name.toLowerCase().trim()))
             const fallbackVehicles = luxuryVehicles.filter((vehicle) => !apiNames.has(vehicle.name.toLowerCase().trim()))

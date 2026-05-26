@@ -57,7 +57,7 @@ function Hero() {
         <div className="max-w-2xl pt-8 sm:pt-0">
           <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[#d4af37]/25 bg-black/45 px-4 py-2 text-[11px] font-black uppercase tracking-[0.28em] text-[#d4af37] backdrop-blur-md">
             <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37] shadow-[0_0_18px_rgba(212,175,55,0.95)]" />
-            Luxury rental experience
+            Experiencia premium de alquiler
           </div>
 
           <h1 className="max-w-[620px] text-[clamp(2.75rem,12vw,5.8rem)] font-black uppercase leading-[0.86] tracking-[-0.06em] text-white drop-shadow-2xl lg:text-[5.9rem]">

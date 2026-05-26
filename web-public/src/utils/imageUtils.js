@@ -47,6 +47,31 @@ export function getVehicleImageUrl(imageUrl, vehicleId) {
   return getFallbackVehicleImageUrl(vehicleId)
 }
 
+export function getVehicleGalleryUrls(vehicle = {}, minimum = 3) {
+  const gallery = Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : []
+  const images = [vehicle.image || vehicle.image_url, ...gallery]
+    .filter(Boolean)
+    .map((url) => getVehicleImageUrl(url, vehicle.id))
+
+  const startIndex = Math.abs((Number(vehicle.id) || 1) - 1)
+  const fallbacks = LOCAL_VEHICLE_FALLBACKS.map((_, index) => LOCAL_VEHICLE_FALLBACKS[(startIndex + index) % LOCAL_VEHICLE_FALLBACKS.length])
+  return Array.from(new Set([...images, ...fallbacks])).slice(0, minimum)
+}
+
+export function formatVehicleDisplayName(name = 'Flota premium') {
+  return name
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\b\p{L}/gu, (letter) => letter.toUpperCase())
+}
+
+export function formatVehiclePrice(price = 50) {
+  const value = Number(price)
+  if (!Number.isFinite(value)) return '50'
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
+}
+
 /**
  * Opcción: Valida si una URL de imagen es accesible
  * @param {string} url - URL a validar

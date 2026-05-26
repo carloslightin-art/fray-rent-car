@@ -31,12 +31,15 @@ function Home() {
         try {
           const vehiclesRes = await getFeaturedVehicles()
           if (vehiclesRes.data && vehiclesRes.data.length > 0) {
-            setFleetVehicles(vehiclesRes.data.map((v) => ({
+            const apiVehicles = vehiclesRes.data.map((v) => ({
               id: v.id,
               name: `${v.brand} ${v.model}`,
               price_per_day: v.price_per_day,
               image: v.image_url
-            })))
+            }))
+            const apiNames = new Set(apiVehicles.map((vehicle) => vehicle.name.toLowerCase().trim()))
+            const fallbackVehicles = luxuryVehicles.filter((vehicle) => !apiNames.has(vehicle.name.toLowerCase().trim()))
+            setFleetVehicles([...apiVehicles, ...fallbackVehicles].slice(0, 3))
           }
         } catch (_err) {
           setFleetVehicles(luxuryVehicles)

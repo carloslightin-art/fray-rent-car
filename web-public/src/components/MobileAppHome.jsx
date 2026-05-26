@@ -41,7 +41,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#030303] text-white md:hidden">
-      <section className="relative min-h-screen overflow-hidden pb-[calc(6.8rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))]">
+      <section className="relative min-h-screen overflow-x-hidden pb-[calc(9.2rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(212,175,55,0.18),transparent_33%),radial-gradient(circle_at_10%_70%,rgba(212,175,55,0.12),transparent_36%),linear-gradient(180deg,#050505_0%,#090704_44%,#030303_100%)]" />
         <div className="absolute -top-20 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.05] blur-2xl" />
         <div className="absolute inset-x-7 top-[21rem] h-40 rounded-full bg-[#d4af37]/[0.11] blur-3xl" />
@@ -86,7 +86,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
             </p>
           </div>
 
-          <div className="relative mt-5 flex flex-1 flex-col justify-center pb-2">
+          <div className="relative mt-5 flex flex-col pb-2">
             <div className="relative mx-auto w-full max-w-[370px]">
               <div className="absolute inset-x-3 bottom-2 h-20 rounded-full bg-black/80 blur-xl" />
               <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/18 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015))] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
@@ -129,7 +129,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
 
             <div className="mt-5 grid grid-cols-[1fr_auto] gap-3">
               <Link
-                to="/booking"
+                to={`/booking?vehicle_id=${heroVehicle?.id || ''}`}
                 className="inline-flex min-h-[58px] items-center justify-center rounded-[1.35rem] bg-[#d4af37] px-5 text-sm font-black uppercase tracking-[0.18em] text-black shadow-[0_18px_55px_rgba(212,175,55,0.32)] active:scale-[0.98]"
               >
                 Reservar ahora
@@ -143,40 +143,59 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
               </Link>
             </div>
 
-            <section className="mt-5">
-              <div className="mb-3 flex items-center justify-between">
+            <section className="mt-[7.25rem] pb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37]">Nuestra flota</p>
-                  <h2 className="mt-1 text-xl font-black text-white">Listos para hoy</h2>
+                  <h2 className="mt-1 text-xl font-black text-white">Elige tu coche</h2>
                 </div>
                 <div className="inline-flex items-center gap-1 rounded-full bg-white/[0.055] px-3 py-2 text-[10px] font-bold text-zinc-300">
                   <MapPin className="h-3.5 w-3.5 text-[#d4af37]" /> RD
                 </div>
               </div>
-              <div className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {featured.map((vehicle) => (
-                  <Link
-                    key={vehicle.id}
-                    to={`/booking?vehicle_id=${vehicle.id}`}
-                    className="min-w-[168px] overflow-hidden rounded-[1.35rem] border border-white/10 bg-white/[0.055] shadow-[0_18px_50px_rgba(0,0,0,0.3)]"
-                  >
-                    <div className="relative h-[92px] overflow-hidden bg-black">
-                      <img
-                        src={getVehicleImageUrl(vehicle.image, vehicle.id)}
-                        alt={formatVehicleName(vehicle.name)}
-                        className="h-full w-full object-cover object-center"
-                        onError={(e) => {
-                          e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
-                        }}
-                      />
-                      <div className="absolute right-2 top-2 rounded-full bg-black/72 px-2 py-1 text-[10px] font-black text-[#d4af37]">${formatPrice(vehicle.price_per_day)}/d</div>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="truncate text-sm font-black text-white">{formatVehicleName(vehicle.name)}</h3>
-                      <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-400"><ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" /> Confirmación rápida</p>
-                    </div>
-                  </Link>
-                ))}
+              <div className="space-y-4">
+                {featured.map((vehicle, index) => {
+                  const vehicleName = formatVehicleName(vehicle.name)
+                  const vehiclePrice = formatPrice(vehicle.price_per_day)
+                  return (
+                    <article
+                      key={`${vehicle.id}-${index}`}
+                      className="overflow-hidden rounded-[1.55rem] border border-white/10 bg-white/[0.055] shadow-[0_18px_50px_rgba(0,0,0,0.3)]"
+                    >
+                      <Link to={`/booking?vehicle_id=${vehicle.id}`} className="block">
+                        <div className="relative h-[168px] overflow-hidden bg-black">
+                          <img
+                            src={getVehicleImageUrl(vehicle.image, vehicle.id)}
+                            alt={vehicleName}
+                            className="h-full w-full object-cover object-center"
+                            onError={(e) => {
+                              e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-black/8" />
+                          <div className="absolute right-3 top-3 rounded-2xl bg-[#d4af37] px-3 py-2 text-right text-black shadow-[0_12px_35px_rgba(212,175,55,0.28)]">
+                            <p className="text-[9px] font-black uppercase leading-none">Desde</p>
+                            <p className="mt-1 text-base font-black leading-none">${vehiclePrice}/d</p>
+                          </div>
+                        </div>
+                      </Link>
+                      <div className="grid gap-3 p-4">
+                        <div>
+                          <h3 className="text-lg font-black text-white">{vehicleName}</h3>
+                          <p className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-400">
+                            <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" /> Confirmación rápida
+                          </p>
+                        </div>
+                        <Link
+                          to={`/booking?vehicle_id=${vehicle.id}`}
+                          className="inline-flex min-h-[46px] items-center justify-center rounded-2xl bg-[#d4af37] px-4 text-xs font-black uppercase tracking-[0.18em] text-black active:scale-[0.98]"
+                        >
+                          Reservar este coche
+                        </Link>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </section>
           </div>

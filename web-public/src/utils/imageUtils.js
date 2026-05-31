@@ -4,6 +4,7 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
+const API_ORIGIN_URL = API_BASE_URL.replace(/\/api\/?$/, '')
 const LOCAL_VEHICLE_FALLBACKS = [
   '/images/vehicles/car-1.jpg',
   '/images/vehicles/car-2.jpg',
@@ -29,7 +30,7 @@ export function getVehicleImageUrl(imageUrl, vehicleId) {
 
   // Si es una URL completa del backend (starts with /uploads)
   if (imageUrl.startsWith('/uploads')) {
-    return `${API_BASE_URL.replace('/api', '')}${imageUrl}`
+    return `${API_ORIGIN_URL}${imageUrl}`
   }
 
   // Si ya es una URL completa (http/https)

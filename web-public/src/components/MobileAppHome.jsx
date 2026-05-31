@@ -33,7 +33,7 @@ const formatPrice = (price = 50) => {
 }
 
 function MobileAppHome({ vehicles = [], footerData = {} }) {
-  const featured = vehicles.slice(0, 3)
+  const featured = vehicles.length ? vehicles : []
   const heroVehicle = featured[1] || featured[0]
   const heroName = formatVehicleName(heroVehicle?.name)
   const heroPrice = formatPrice(heroVehicle?.price_per_day)
@@ -42,7 +42,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#030303] text-white md:hidden">
-      <section className="relative min-h-screen overflow-x-hidden pb-[calc(9.2rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))]">
+      <section className="relative min-h-screen overflow-x-hidden pb-[calc(13rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(212,175,55,0.18),transparent_33%),radial-gradient(circle_at_10%_70%,rgba(212,175,55,0.12),transparent_36%),linear-gradient(180deg,#050505_0%,#090704_44%,#030303_100%)]" />
         <div className="absolute -top-20 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/[0.05] blur-2xl" />
         <div className="absolute inset-x-7 top-[21rem] h-40 rounded-full bg-[#d4af37]/[0.11] blur-3xl" />
@@ -159,7 +159,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
               </Link>
             </div>
 
-            <section className="mt-[7.25rem] pb-4">
+            <section className="mt-[7.25rem] pb-[calc(7rem+env(safe-area-inset-bottom))]">
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37]">Nuestra flota</p>

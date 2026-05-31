@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import VehicleCard from '../components/VehicleCard'
+import MobileFleet from '../components/MobileFleet'
 import { getVehicles } from '../services/api'
 import { luxuryVehicles } from '../data/vehicles'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import useMobileAppMode from '../hooks/useMobileAppMode'
 
 function Fleet() {
+  const isMobileAppMode = useMobileAppMode()
   const [vehiclesState, setVehiclesState] = useState(luxuryVehicles)
   const [loading, setLoading] = useState(true)
 
@@ -30,7 +33,12 @@ function Fleet() {
               vehicle_type: v.vehicle_type || v.category || 'Económico',
               insurance_included: v.insurance_included !== false
             }))
-          setVehiclesState(mappedVehicles.length ? mappedVehicles : luxuryVehicles)
+          const apiNames = new Set(mappedVehicles.map((vehicle) => vehicle.name.toLowerCase().trim()))
+          const fallbackVehicles = luxuryVehicles.filter((vehicle) => !apiNames.has(vehicle.name.toLowerCase().trim()))
+          const completeFleet = mappedVehicles.length >= 3
+            ? mappedVehicles
+            : [...mappedVehicles, ...fallbackVehicles].slice(0, 3)
+          setVehiclesState(completeFleet.length ? completeFleet : luxuryVehicles)
         }
       } catch (_error) {
         setVehiclesState(luxuryVehicles)
@@ -40,6 +48,10 @@ function Fleet() {
     }
     loadVehicles()
   }, [])
+
+  if (isMobileAppMode) {
+    return <MobileFleet vehicles={vehiclesState} loading={loading} />
+  }
 
   return (
     <div className="min-h-screen bg-[#030303] text-white">

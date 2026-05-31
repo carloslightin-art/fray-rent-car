@@ -43,12 +43,17 @@ function MobileFleet({ vehicles = [], loading = false }) {
             </div>
           </div>
 
-          {loading ? (
+          {loading && visibleVehicles.length === 0 ? (
             <div className="grid min-h-[45vh] place-items-center">
               <div className="h-11 w-11 animate-spin rounded-full border-2 border-[#d4af37] border-t-transparent" />
             </div>
           ) : (
             <div className="space-y-5 pb-10">
+              {loading && visibleVehicles.length > 0 && (
+                <div className="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#d4af37]">
+                  Actualizando disponibilidad...
+                </div>
+              )}
               {visibleVehicles.map((vehicle, index) => {
                 const vehicleName = formatVehicleName(vehicle.name)
                 const vehiclePrice = formatPrice(vehicle.price_per_day)

@@ -6,7 +6,7 @@ import VehicleCard from '../components/VehicleCard'
 import TrustServices from '../components/TrustServices'
 import Footer from '../components/Footer'
 import MobileAppHome from '../components/MobileAppHome'
-import { getFeaturedVehicles } from '../services/api'
+import { getVehicles } from '../services/api'
 import { getWebsiteSection } from '../services/websiteContent'
 import { luxuryVehicles } from '../data/vehicles'
 import useMobileAppMode from '../hooks/useMobileAppMode'
@@ -29,7 +29,7 @@ function Home() {
       try {
         setLoading(true)
         try {
-          const vehiclesRes = await getFeaturedVehicles()
+          const vehiclesRes = await getVehicles()
           if (vehiclesRes.data && vehiclesRes.data.length > 0) {
             const apiVehicles = vehiclesRes.data.map((v) => ({
               id: v.id,
@@ -43,7 +43,7 @@ function Home() {
             }))
             const apiNames = new Set(apiVehicles.map((vehicle) => vehicle.name.toLowerCase().trim()))
             const fallbackVehicles = luxuryVehicles.filter((vehicle) => !apiNames.has(vehicle.name.toLowerCase().trim()))
-            setFleetVehicles([...apiVehicles, ...fallbackVehicles].slice(0, 3))
+            setFleetVehicles([...apiVehicles, ...fallbackVehicles])
           }
         } catch (_err) {
           setFleetVehicles(luxuryVehicles)

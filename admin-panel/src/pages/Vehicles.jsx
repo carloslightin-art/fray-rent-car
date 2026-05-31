@@ -287,11 +287,11 @@ function Vehicles() {
     }
     // Si comienza con /uploads (ruta relativa del backend)
     if (url.startsWith('/uploads')) {
-      const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '')
+      const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api\/?$/, '')
       return `${API_URL}${url}`
     }
     // Para cualquier otra ruta relativa
-    const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '')
+    const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api\/?$/, '')
     return `${API_URL}/${url}`
   }
 

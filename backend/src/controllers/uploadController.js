@@ -2,6 +2,7 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 const { errorDetails } = require('../utils/safeErrors')
+const { parseVehicleGallery, uniqueImages, serializeVehicle } = require('../utils/vehicleImages')
 
 // Configurar almacenamiento
 const storage = multer.diskStorage({
@@ -61,7 +62,7 @@ const uploadVehicleImageController = (req, res) => {
         })
       }
 
-      const { vehicleId } = req.body
+      const { vehicleId, mode = 'append' } = req.body
       
       // URL pública para acceder a la imagen
       const imageUrl = `/uploads/vehicles/${req.file.filename}`
@@ -72,20 +73,21 @@ const uploadVehicleImageController = (req, res) => {
         const vehicle = await Vehicle.findByPk(vehicleId)
         
         if (vehicle) {
-          // Eliminar imagen anterior si existe y es local
-          if (vehicle.image_url && vehicle.image_url.includes('/uploads/')) {
-            const oldFilePath = path.join(__dirname, '../../', vehicle.image_url)
-            if (fs.existsSync(oldFilePath)) {
-              fs.unlinkSync(oldFilePath)
-            }
-          }
-          
-          await vehicle.update({ image_url: imageUrl })
+          const currentGallery = parseVehicleGallery(vehicle.gallery_images)
+          const nextGallery = mode === 'replace'
+            ? [imageUrl]
+            : uniqueImages([vehicle.image_url, ...currentGallery, imageUrl])
+
+          await vehicle.update({
+            image_url: vehicle.image_url || imageUrl,
+            gallery_images: nextGallery
+          })
           
           return res.json({
-            message: 'Imagen actualizada correctamente',
+            message: 'Imagen añadida correctamente',
             imageUrl,
-            vehicle
+            galleryImages: nextGallery,
+            vehicle: serializeVehicle(vehicle)
           })
         }
       }

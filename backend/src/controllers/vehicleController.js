@@ -1,5 +1,6 @@
 const { errorDetails } = require('../utils/safeErrors')
 const { Vehicle } = require('../models')
+const { normalizeVehiclePayload, serializeVehicle } = require('../utils/vehicleImages')
 
 // Listar todos los vehículos (para admin)
 const listVehicles = async (_req, res) => {
@@ -10,7 +11,7 @@ const listVehicles = async (_req, res) => {
         ['id', 'ASC']
       ] 
     })
-    return res.json(vehicles)
+    return res.json(vehicles.map(serializeVehicle))
   } catch (error) {
     return res.status(500).json({ message: 'Error al listar vehículos', ...errorDetails(error) })
   }
@@ -26,7 +27,7 @@ const listActiveVehicles = async (_req, res) => {
         ['id', 'ASC']
       ]
     })
-    return res.json(vehicles)
+    return res.json(vehicles.map(serializeVehicle))
   } catch (error) {
     return res.status(500).json({ message: 'Error al listar vehículos', ...errorDetails(error) })
   }
@@ -46,7 +47,7 @@ const listFeaturedVehicles = async (_req, res) => {
       ],
       limit: 3
     })
-    return res.json(vehicles)
+    return res.json(vehicles.map(serializeVehicle))
   } catch (error) {
     return res.status(500).json({ message: 'Error al listar vehículos destacados', ...errorDetails(error) })
   }
@@ -58,7 +59,7 @@ const getVehicleById = async (req, res) => {
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehículo no encontrado' })
     }
-    return res.json(vehicle)
+    return res.json(serializeVehicle(vehicle))
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener vehículo', ...errorDetails(error) })
   }
@@ -66,27 +67,32 @@ const getVehicleById = async (req, res) => {
 
 const createVehicle = async (req, res) => {
   try {
-    const { brand, model, year, price_per_day, status, category, image_url, description, is_active, is_featured, sort_order } = req.body
+    const { brand, model, year, price_per_day } = req.body
 
     if (!brand || !model || !year || !price_per_day) {
       return res.status(400).json({ message: 'brand, model, year y price_per_day son obligatorios' })
     }
 
-    const vehicle = await Vehicle.create({
-      brand,
-      model,
-      year,
-      price_per_day,
-      status: status || 'available',
-      category: category || 'economico',
-      image_url: image_url || null,
-      description: description || null,
-      is_active: is_active !== undefined ? is_active : true,
-      is_featured: is_featured || false,
-      sort_order: sort_order || 0
+    const payload = normalizeVehiclePayload({
+      ...req.body,
+      status: req.body.status || 'available',
+      category: req.body.category || 'economico',
+      description: req.body.description || null,
+      is_active: req.body.is_active !== undefined ? req.body.is_active : true,
+      is_featured: req.body.is_featured || false,
+      sort_order: req.body.sort_order || 0,
+      seats: req.body.seats || 5,
+      vehicle_type: req.body.vehicle_type || req.body.category || 'Económico',
+      insurance_included: req.body.insurance_included !== undefined ? req.body.insurance_included : true
     })
 
-    return res.status(201).json(vehicle)
+    if (payload.image_url && (!payload.gallery_images || payload.gallery_images.length === 0)) {
+      payload.gallery_images = [payload.image_url]
+    }
+
+    const vehicle = await Vehicle.create(payload)
+
+    return res.status(201).json(serializeVehicle(vehicle))
   } catch (error) {
     return res.status(500).json({ message: 'Error al crear vehículo', ...errorDetails(error) })
   }
@@ -99,8 +105,9 @@ const updateVehicle = async (req, res) => {
       return res.status(404).json({ message: 'Vehículo no encontrado' })
     }
 
-    await vehicle.update(req.body)
-    return res.json(vehicle)
+    const payload = normalizeVehiclePayload(req.body)
+    await vehicle.update(payload)
+    return res.json(serializeVehicle(vehicle))
   } catch (error) {
     return res.status(500).json({ message: 'Error al actualizar vehículo', ...errorDetails(error) })
   }

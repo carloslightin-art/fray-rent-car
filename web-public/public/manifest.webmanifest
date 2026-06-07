@@ -1,0 +1,25 @@
+{
+  "name": "FRAY RENT CAR",
+  "short_name": "FRAY RENT",
+  "description": "Reserva de vehículos premium en República Dominicana.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#030303",
+  "theme_color": "#030303",
+  "icons": [
+    {
+      "src": "/images/logo/logo-circle-fill.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo/logo-circle-fill.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

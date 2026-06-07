@@ -20,6 +20,10 @@ const Vehicle = sequelize.define(
       defaultValue: 'economico'
     },
     image_url: { type: DataTypes.STRING(500), allowNull: true },
+    gallery_images: { type: DataTypes.JSON, allowNull: true },
+    seats: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 5 },
+    vehicle_type: { type: DataTypes.STRING(80), allowNull: true },
+    insurance_included: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     description: { type: DataTypes.TEXT, allowNull: true },
     is_active: {
       type: DataTypes.BOOLEAN,

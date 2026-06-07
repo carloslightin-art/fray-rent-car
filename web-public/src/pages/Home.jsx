@@ -5,13 +5,16 @@ import BookingForm from '../components/BookingForm'
 import VehicleCard from '../components/VehicleCard'
 import TrustServices from '../components/TrustServices'
 import Footer from '../components/Footer'
-import { getFeaturedVehicles } from '../services/api'
+import MobileAppHome from '../components/MobileAppHome'
+import { getVehicles } from '../services/api'
 import { getWebsiteSection } from '../services/websiteContent'
 import { luxuryVehicles } from '../data/vehicles'
+import useMobileAppMode from '../hooks/useMobileAppMode'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MonitorSmartphone, Database, LayoutDashboard, Smartphone } from 'lucide-react'
 
 function Home() {
+  const isMobileAppMode = useMobileAppMode()
   const [fleetVehicles, setFleetVehicles] = useState(luxuryVehicles)
   const [footerData, setFooterData] = useState({
     phone: '+1 809 000 0000',
@@ -26,14 +29,21 @@ function Home() {
       try {
         setLoading(true)
         try {
-          const vehiclesRes = await getFeaturedVehicles()
+          const vehiclesRes = await getVehicles()
           if (vehiclesRes.data && vehiclesRes.data.length > 0) {
-            setFleetVehicles(vehiclesRes.data.map((v) => ({
+            const apiVehicles = vehiclesRes.data.map((v) => ({
               id: v.id,
               name: `${v.brand} ${v.model}`,
               price_per_day: v.price_per_day,
-              image: v.image_url
-            })))
+              image: v.image_url,
+              gallery_images: v.gallery_images || [],
+              seats: v.seats || 5,
+              vehicle_type: v.vehicle_type || v.category || 'Económico',
+              insurance_included: v.insurance_included !== false
+            }))
+            const apiNames = new Set(apiVehicles.map((vehicle) => vehicle.name.toLowerCase().trim()))
+            const fallbackVehicles = luxuryVehicles.filter((vehicle) => !apiNames.has(vehicle.name.toLowerCase().trim()))
+            setFleetVehicles([...apiVehicles, ...fallbackVehicles])
           }
         } catch (_err) {
           setFleetVehicles(luxuryVehicles)
@@ -59,12 +69,16 @@ function Home() {
     loadData()
   }, [])
 
-  if (loading) {
+  if (loading && fleetVehicles.length === 0) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#050505]">
         <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#d4af37] border-t-transparent" />
       </div>
     )
+  }
+
+  if (isMobileAppMode) {
+    return <MobileAppHome vehicles={fleetVehicles} footerData={footerData} />
   }
 
   return (

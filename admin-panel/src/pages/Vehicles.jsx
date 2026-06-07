@@ -18,6 +18,10 @@ function Vehicles() {
     status: 'available',
     category: 'economico',
     image_url: '',
+    gallery_images: [],
+    seats: 5,
+    vehicle_type: 'Económico',
+    insurance_included: true,
     description: '',
     is_active: true,
     is_featured: false,
@@ -25,8 +29,8 @@ function Vehicles() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
-  // Archivo de imagen seleccionado (para auto-upload tras crear vehículo)
-  const [selectedImageFile, setSelectedImageFile] = useState(null)
+  // Archivos de galería seleccionados (para auto-upload tras crear vehículo)
+  const [selectedImageFiles, setSelectedImageFiles] = useState([])
 
   const isOwner = user?.role === 'owner'
   const isWorker = user?.role === 'worker'
@@ -67,13 +71,17 @@ function Vehicles() {
 
     setIsSubmitting(true)
 
-    // No enviar image_url si es base64 (data:image/...) — la imagen debe subirse por separado
-    const { image_url, ...restData } = formData
+    // No enviar previews base64; las fotos nuevas se suben por separado
+    const { image_url, gallery_images, ...restData } = formData
     const data = {
       ...restData,
       year: parseInt(formData.year),
       price_per_day: parseFloat(formData.price_per_day),
-      sort_order: parseInt(formData.sort_order) || 0
+      sort_order: parseInt(formData.sort_order) || 0,
+      seats: parseInt(formData.seats) || 5,
+      gallery_images: Array.isArray(gallery_images)
+        ? gallery_images.filter((url) => url && !url.startsWith('data:'))
+        : []
     }
 
     // Si image_url es una URL real (no base64), enviarla
@@ -87,11 +95,14 @@ function Vehicles() {
       } else {
         const response = await createVehicle(data)
         // Auto-upload image si se seleccionó uno al crear vehículo
-        if (selectedImageFile && response.data?.id) {
-          const uploadFormData = new FormData()
-          uploadFormData.append('image', selectedImageFile)
-          uploadFormData.append('vehicleId', response.data.id)
-          await uploadVehicleImage(response.data.id, uploadFormData)
+        if (selectedImageFiles.length > 0 && response.data?.id) {
+          for (const file of selectedImageFiles.slice(0, 6)) {
+            const uploadFormData = new FormData()
+            uploadFormData.append('image', file)
+            uploadFormData.append('vehicleId', response.data.id)
+            uploadFormData.append('mode', 'append')
+            await uploadVehicleImage(response.data.id, uploadFormData)
+          }
         }
       }
       await fetchVehicles()
@@ -106,7 +117,7 @@ function Vehicles() {
 
   const handleEdit = (vehicle) => {
     setEditingVehicle(vehicle)
-    setSelectedImageFile(null)
+    setSelectedImageFiles([])
     setFormData({
       brand: vehicle.brand,
       model: vehicle.model,
@@ -115,6 +126,10 @@ function Vehicles() {
       status: vehicle.status,
       category: vehicle.category || 'economico',
       image_url: vehicle.image_url || '',
+      gallery_images: Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : [],
+      seats: vehicle.seats || 5,
+      vehicle_type: vehicle.vehicle_type || vehicle.category || 'Económico',
+      insurance_included: vehicle.insurance_included !== false,
       description: vehicle.description || '',
       is_active: vehicle.is_active !== false,
       is_featured: vehicle.is_featured === true,
@@ -177,6 +192,10 @@ function Vehicles() {
       status: 'available',
       category: 'economico',
       image_url: '',
+      gallery_images: [],
+      seats: 5,
+      vehicle_type: 'Económico',
+      insurance_included: true,
       description: '',
       is_active: true,
       is_featured: false,
@@ -184,59 +203,74 @@ function Vehicles() {
     })
     setEditingVehicle(null)
     setShowForm(false)
-    setSelectedImageFile(null)
+    setSelectedImageFiles([])
   }
 
-  // Manejar cambio de archivo de imagen
+  // Manejar cambio de archivos de galería
   const handleImageChange = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
 
     if (!isOwner) {
       alert('Solo el owner puede modificar vehículos')
       return
     }
 
-    // Validar tipo
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-    if (!validTypes.includes(file.type)) {
+    const invalidFile = files.find((file) => !validTypes.includes(file.type))
+    if (invalidFile) {
       alert('Tipo de archivo no válido. Solo se admiten imágenes (JPEG, PNG, WEBP, GIF)')
       return
     }
 
-    // Validar tamaño (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('El archivo es demasiado grande. Máximo 5MB')
+    const tooLarge = files.find((file) => file.size > 5 * 1024 * 1024)
+    if (tooLarge) {
+      alert('Una imagen es demasiado grande. Máximo 5MB por foto')
       return
     }
 
-    // Si hay vehículo editándose, subir directamente
+    const filesToUse = files.slice(0, 6)
+
     if (editingVehicle) {
       setUploadingImage(true)
       try {
-        const formData = new FormData()
-        formData.append('image', file)
-        formData.append('vehicleId', editingVehicle.id)
-
-        const response = await uploadVehicleImage(editingVehicle.id, formData)
-        setFormData(prev => ({ ...prev, image_url: response.data.imageUrl }))
+        let latestVehicle = null
+        for (const file of filesToUse) {
+          const uploadFormData = new FormData()
+          uploadFormData.append('image', file)
+          uploadFormData.append('vehicleId', editingVehicle.id)
+          uploadFormData.append('mode', 'append')
+          const response = await uploadVehicleImage(editingVehicle.id, uploadFormData)
+          latestVehicle = response.data?.vehicle
+        }
+        if (latestVehicle) {
+          setFormData(prev => ({
+            ...prev,
+            image_url: latestVehicle.image_url || prev.image_url,
+            gallery_images: latestVehicle.gallery_images || prev.gallery_images
+          }))
+        }
         await fetchVehicles()
-        alert('Imagen actualizada correctamente')
+        alert('Fotos añadidas correctamente')
       } catch (err) {
-        console.error('Error uploading image:', err)
-        alert(err.response?.data?.message || 'Error al subir imagen')
+        console.error('Error uploading images:', err)
+        alert(err.response?.data?.message || 'Error al subir fotos')
       } finally {
         setUploadingImage(false)
+        e.target.value = ''
       }
     } else {
-      // Si no hay vehículo, guardar archivo para auto-upload tras crear
-      setSelectedImageFile(file)
-      // URL temporal para preview
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setFormData(prev => ({ ...prev, image_url: e.target.result }))
-      }
-      reader.readAsDataURL(file)
+      setSelectedImageFiles(filesToUse)
+      const previews = await Promise.all(filesToUse.map((file) => new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (event) => resolve(event.target.result)
+        reader.readAsDataURL(file)
+      })))
+      setFormData(prev => ({
+        ...prev,
+        image_url: previews[0] || '',
+        gallery_images: previews
+      }))
     }
   }
 
@@ -253,11 +287,11 @@ function Vehicles() {
     }
     // Si comienza con /uploads (ruta relativa del backend)
     if (url.startsWith('/uploads')) {
-      const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '')
+      const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api\/?$/, '')
       return `${API_URL}${url}`
     }
     // Para cualquier otra ruta relativa
-    const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '')
+    const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api\/?$/, '')
     return `${API_URL}/${url}`
   }
 
@@ -272,7 +306,8 @@ function Vehicles() {
   }
 
   const getDisplayVehicleImage = (vehicle) => {
-    return getVehicleImageUrl(vehicle?.image_url) || getFallbackVehicleImage(vehicle)
+    const gallery = Array.isArray(vehicle?.gallery_images) ? vehicle.gallery_images : []
+    return getVehicleImageUrl(vehicle?.image_url || gallery[0]) || getFallbackVehicleImage(vehicle)
   }
 
   const getStatusLabel = (status) => {
@@ -324,7 +359,7 @@ function Vehicles() {
                 if (showForm) {
                   resetForm()
                 } else {
-                  setSelectedImageFile(null)
+                  setSelectedImageFiles([])
                   setShowForm(true)
                 }
               }}
@@ -401,7 +436,7 @@ function Vehicles() {
             
             {/* Precio */}
             <div>
-              <label className="mb-1 block text-sm text-luxuryMuted">Precio/día (€) *</label>
+              <label className="mb-1 block text-sm text-luxuryMuted">Precio/día (US$) *</label>
               <input
                 name="price_per_day"
                 type="number"
@@ -444,6 +479,33 @@ function Vehicles() {
                 <option value="reserved">Reservado</option>
               </select>
             </div>
+
+            {/* Plazas */}
+            <div>
+              <label className="mb-1 block text-sm text-luxuryMuted">Número de plazas</label>
+              <input
+                name="seats"
+                type="number"
+                min="1"
+                max="15"
+                value={formData.seats}
+                onChange={handleChange}
+                className="input-luxury"
+                placeholder="Ej: 5"
+              />
+            </div>
+
+            {/* Tipo */}
+            <div>
+              <label className="mb-1 block text-sm text-luxuryMuted">Tipo de vehículo</label>
+              <input
+                name="vehicle_type"
+                value={formData.vehicle_type}
+                onChange={handleChange}
+                className="input-luxury"
+                placeholder="Ej: Compacto, SUV, Sedán"
+              />
+            </div>
             
             {/* Orden */}
             <div>
@@ -459,9 +521,9 @@ function Vehicles() {
               />
             </div>
             
-            {/* Imagen */}
-            <div className="lg:col-span-2">
-              <label className="mb-1 block text-sm text-luxuryMuted">Imagen del vehículo</label>
+            {/* Galería */}
+            <div className="lg:col-span-3">
+              <label className="mb-1 block text-sm text-luxuryMuted">Galería del vehículo</label>
               <div className="flex gap-3 items-start">
                 {/* Input file */}
                 <div className="flex-1">
@@ -475,31 +537,39 @@ function Vehicles() {
                       <>
                         <Upload className="w-5 h-5 text-luxuryGold" />
                         <span className="text-sm text-luxuryText">
-                          {formData.image_url ? 'Cambiar imagen' : 'Subir imagen'}
+                          {formData.gallery_images?.length ? 'Añadir más fotos' : 'Subir fotos'}
                         </span>
                       </>
                     )}
                     <input
                       type="file"
+                      multiple
                       accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                       onChange={handleImageChange}
                       disabled={!isOwner || uploadingImage}
                       className="hidden"
                     />
                   </label>
-                  <p className="text-xs text-luxuryMuted mt-1">Máx 5MB (JPEG, PNG, WEBP, GIF)</p>
+                  <p className="text-xs text-luxuryMuted mt-1">Mínimo recomendado: 3 fotos (frontal, lateral e interior). Máx 5MB por foto.</p>
                 </div>
-                {/* Preview */}
-                {formData.image_url && (
-                  <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-luxuryGold/20">
-                    <img 
-                      src={formData.image_url} 
-                      alt="Preview" 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = 'none'
-                      }}
-                    />
+                {/* Previews */}
+                {formData.gallery_images?.length > 0 && (
+                  <div className="grid w-full max-w-md grid-cols-3 gap-2">
+                    {formData.gallery_images.slice(0, 6).map((url, index) => (
+                      <div key={`${url}-${index}`} className="relative h-24 rounded-lg overflow-hidden border border-luxuryGold/20 bg-luxuryPanel">
+                        <img 
+                          src={getVehicleImageUrl(url) || url} 
+                          alt={`Foto ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = getFallbackVehicleImage({ id: index + 1 })
+                          }}
+                        />
+                        <span className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] text-luxuryGold">
+                          {index === 0 ? 'Principal' : `Foto ${index + 1}`}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -507,6 +577,16 @@ function Vehicles() {
             
             {/* Checkboxes */}
             <div className="flex items-center gap-6 pt-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="insurance_included"
+                  checked={formData.insurance_included}
+                  onChange={handleChange}
+                  className="w-4 h-4 rounded border-luxuryGold/30 bg-luxuryPanel text-luxuryGold focus:ring-luxuryGold"
+                />
+                <span className="text-sm text-luxuryText">Seguro incluido</span>
+              </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -604,21 +684,22 @@ function Vehicles() {
                 </span>
               </div>
               
-              <div className="mt-2 flex items-center gap-3 text-sm text-luxuryMuted">
-                <span>{vehicle.year}</span>
-                <span>•</span>
-                <span>{getCategoryLabel(vehicle.category)}</span>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-luxuryMuted">
+                <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.year}</span>
+                <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.seats || 5} plazas</span>
+                <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.vehicle_type || getCategoryLabel(vehicle.category)}</span>
+                <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.insurance_included === false ? 'Seguro opcional' : 'Seguro incluido'}</span>
+                {vehicle.gallery_images?.length > 0 && (
+                  <span className="rounded-full bg-luxuryGold/10 px-2 py-1 text-luxuryGold">{vehicle.gallery_images.length} {vehicle.gallery_images.length === 1 ? 'foto' : 'fotos'}</span>
+                )}
                 {vehicle.sort_order > 0 && (
-                  <>
-                    <span>•</span>
-                    <span>Orden: {vehicle.sort_order}</span>
-                  </>
+                  <span className="rounded-full bg-white/5 px-2 py-1">Orden: {vehicle.sort_order}</span>
                 )}
               </div>
               
               <div className="mt-3 flex items-center justify-between border-t border-luxuryGold/10 pt-3">
                 <p className="text-luxuryGold">
-                  <span className="text-xl font-bold">{vehicle.price_per_day}€</span>
+                  <span className="text-xl font-bold">US${vehicle.price_per_day}</span>
                   <span className="text-xs text-luxuryMuted">/día</span>
                 </p>
                 <div className="flex items-center gap-1">

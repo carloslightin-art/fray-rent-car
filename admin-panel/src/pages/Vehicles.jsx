@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getVehicles, createVehicle, updateVehicle, deleteVehicle, toggleVehicleFeatured, toggleVehicleActive, uploadVehicleImage } from '../services/api'
+import { getVehicles, createVehicle, updateVehicle, deleteVehicle, toggleVehicleFeatured, toggleVehicleActive, uploadVehicleImage, deleteVehicleImage } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { Star, StarOff, Plus, Edit2, Trash2, X, Check, XCircle, Upload, Loader2 } from 'lucide-react'
 
@@ -295,6 +295,49 @@ function Vehicles() {
         }
       })
     }
+  }
+
+  const handleDeletePhoto = async (url, index) => {
+    if (!isOwner) {
+      alert('Solo el owner puede eliminar fotos')
+      return
+    }
+
+    if (!confirm('¿Eliminar solo esta foto del vehículo?')) return
+
+    if (editingVehicle && url && !url.startsWith('data:')) {
+      try {
+        const response = await deleteVehicleImage(editingVehicle.id, url)
+        const latestVehicle = response.data?.vehicle
+        const realGalleryImages = uniqueRealVehicleImages([
+          latestVehicle?.image_url,
+          ...(Array.isArray(latestVehicle?.gallery_images) ? latestVehicle.gallery_images : [])
+        ])
+
+        setFormData(prev => ({
+          ...prev,
+          image_url: realGalleryImages[0] || '',
+          gallery_images: realGalleryImages
+        }))
+        await fetchVehicles()
+        return
+      } catch (err) {
+        console.error('Error deleting photo:', err)
+        alert(err.response?.data?.message || 'Error al eliminar la foto')
+        return
+      }
+    }
+
+    setSelectedImageFiles(prev => prev.filter((_, fileIndex) => fileIndex !== index))
+    setFormData(prev => {
+      const nextGallery = (Array.isArray(prev.gallery_images) ? prev.gallery_images : [])
+        .filter((_, imageIndex) => imageIndex !== index)
+      return {
+        ...prev,
+        image_url: nextGallery[0] || '',
+        gallery_images: nextGallery
+      }
+    })
   }
 
   // Helper para normalizar URLs de imágenes
@@ -599,6 +642,16 @@ function Vehicles() {
                         <span className="absolute left-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] text-luxuryGold">
                           {index === 0 ? 'Principal' : `Foto ${index + 1}`}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePhoto(url, index)}
+                          disabled={!isOwner}
+                          aria-label={`Eliminar foto ${index + 1}`}
+                          title="Eliminar solo esta foto"
+                          className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full border border-red-400/40 bg-red-600/90 text-white shadow-lg transition hover:bg-red-500 disabled:opacity-50"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                     ))}
                   </div>

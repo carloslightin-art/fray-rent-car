@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   CalendarCheck,
@@ -32,13 +33,100 @@ const formatPrice = (price = 50) => {
   return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
 }
 
+
+function MobileHomeVehicleCard({ vehicle, index }) {
+  const vehicleName = formatVehicleName(vehicle.name)
+  const vehiclePrice = formatPrice(vehicle.price_per_day)
+  const vehicleGallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
+  const [selectedImage, setSelectedImage] = useState(vehicleGallery[0] || '')
+
+  useEffect(() => {
+    setSelectedImage(vehicleGallery[0] || '')
+  }, [vehicle.id, vehicleGallery[0]])
+
+  return (
+    <article
+      key={`${vehicle.id}-${index}`}
+      className="overflow-hidden rounded-[1.55rem] border border-white/10 bg-white/[0.055] shadow-[0_18px_50px_rgba(0,0,0,0.3)]"
+    >
+      <Link to={`/booking?vehicle=${vehicle.id}`} className="block">
+        <div className="relative h-[168px] overflow-hidden bg-black">
+          <img
+            src={selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
+            alt={vehicleName}
+            className="h-full w-full object-cover object-center"
+            onError={(e) => {
+              e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-black/8" />
+          <div className="absolute left-3 top-3 rounded-full border border-[#d4af37]/30 bg-black/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#d4af37] backdrop-blur-md">
+            {vehicleGallery.length} {vehicleGallery.length === 1 ? 'foto' : 'fotos'}
+          </div>
+          <div className="absolute right-3 top-3 rounded-2xl bg-[#d4af37] px-3 py-2 text-right text-black shadow-[0_12px_35px_rgba(212,175,55,0.28)]">
+            <p className="text-[9px] font-black uppercase leading-none">Desde</p>
+            <p className="mt-1 text-base font-black leading-none">${vehiclePrice}/d</p>
+          </div>
+        </div>
+      </Link>
+      <div className="grid gap-3 p-4">
+        {vehicleGallery.length > 1 && (
+          <div className="grid grid-cols-3 gap-2">
+            {vehicleGallery.map((url, photoIndex) => (
+              <button
+                key={`${url}-${photoIndex}`}
+                type="button"
+                onClick={() => setSelectedImage(url)}
+                aria-label={`Ver foto ${photoIndex + 1} de ${vehicleName}`}
+                className={`h-14 overflow-hidden rounded-xl border bg-black transition active:scale-[0.98] ${selectedImage === url ? 'border-[#d4af37] ring-2 ring-[#d4af37]/55' : 'border-white/10'}`}
+              >
+                <img
+                  src={url}
+                  alt={`${vehicleName} foto ${photoIndex + 1}`}
+                  className="h-full w-full object-cover object-center"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id + photoIndex)
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+        <div>
+          <h3 className="text-lg font-black text-white">{vehicleName}</h3>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-[10px] font-black uppercase tracking-[0.08em] text-zinc-300">
+            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.seats || 5} plazas</span>
+            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.vehicle_type || 'Auto'}</span>
+            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.insurance_included === false ? 'Seguro opc.' : 'Seguro'}</span>
+          </div>
+          <p className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-400">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" /> Confirmación rápida
+          </p>
+        </div>
+        <Link
+          to={`/booking?vehicle=${vehicle.id}`}
+          className="inline-flex min-h-[46px] items-center justify-center rounded-2xl bg-[#d4af37] px-4 text-xs font-black uppercase tracking-[0.18em] text-black active:scale-[0.98]"
+        >
+          Reservar este coche
+        </Link>
+      </div>
+    </article>
+  )
+}
+
 function MobileAppHome({ vehicles = [], footerData = {} }) {
   const featured = vehicles.length ? vehicles : []
   const heroVehicle = featured[1] || featured[0]
   const heroName = formatVehicleName(heroVehicle?.name)
   const heroPrice = formatPrice(heroVehicle?.price_per_day)
   const heroGallery = getVehicleGalleryUrls(heroVehicle).slice(0, 3)
+  const [selectedHeroImage, setSelectedHeroImage] = useState(heroGallery[0] || '')
   const phone = footerData.phone || '+1 809 000 0000'
+
+  useEffect(() => {
+    setSelectedHeroImage(heroGallery[0] || '')
+  }, [heroVehicle?.id, heroGallery[0]])
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#030303] text-white md:hidden">
@@ -93,7 +181,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
               <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/18 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015))] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
                 <div className="relative aspect-[1.45] overflow-hidden rounded-[1.55rem] bg-black">
                   <img
-                    src={heroGallery[0] || getFallbackVehicleImageUrl(heroVehicle?.id)}
+                    src={selectedHeroImage || heroGallery[0] || getFallbackVehicleImageUrl(heroVehicle?.id)}
                     alt={heroName}
                     className="absolute inset-0 h-full w-full object-cover object-center"
                     onError={(e) => {
@@ -114,7 +202,13 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {heroGallery.map((url, index) => (
-                    <div key={`${url}-${index}`} className="h-14 overflow-hidden rounded-xl border border-white/10 bg-black">
+                    <button
+                      key={`${url}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedHeroImage(url)}
+                      aria-label={`Ver foto destacada ${index + 1} de ${heroName}`}
+                      className={`h-14 overflow-hidden rounded-xl border bg-black transition active:scale-[0.98] ${selectedHeroImage === url ? 'border-[#d4af37] ring-2 ring-[#d4af37]/55' : 'border-white/10'}`}
+                    >
                       <img
                         src={url}
                         alt={`${heroName} foto ${index + 1}`}
@@ -124,7 +218,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                           e.currentTarget.src = getFallbackVehicleImageUrl((heroVehicle?.id || 1) + index)
                         }}
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -145,7 +239,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
 
             <div className="mt-5 grid grid-cols-[1fr_auto] gap-3">
               <Link
-                to={`/booking?vehicle_id=${heroVehicle?.id || ''}`}
+                to={`/booking?vehicle=${heroVehicle?.id || ''}`}
                 className="inline-flex min-h-[58px] items-center justify-center rounded-[1.35rem] bg-[#d4af37] px-5 text-sm font-black uppercase tracking-[0.18em] text-black shadow-[0_18px_55px_rgba(212,175,55,0.32)] active:scale-[0.98]"
               >
                 Reservar ahora
@@ -170,71 +264,9 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                 </div>
               </div>
               <div className="space-y-4">
-                {featured.map((vehicle, index) => {
-                  const vehicleName = formatVehicleName(vehicle.name)
-                  const vehiclePrice = formatPrice(vehicle.price_per_day)
-                  const vehicleGallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
-                  return (
-                    <article
-                      key={`${vehicle.id}-${index}`}
-                      className="overflow-hidden rounded-[1.55rem] border border-white/10 bg-white/[0.055] shadow-[0_18px_50px_rgba(0,0,0,0.3)]"
-                    >
-                      <Link to={`/booking?vehicle_id=${vehicle.id}`} className="block">
-                        <div className="relative h-[168px] overflow-hidden bg-black">
-                          <img
-                            src={vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
-                            alt={vehicleName}
-                            className="h-full w-full object-cover object-center"
-                            onError={(e) => {
-                              e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-black/8" />
-                          <div className="absolute right-3 top-3 rounded-2xl bg-[#d4af37] px-3 py-2 text-right text-black shadow-[0_12px_35px_rgba(212,175,55,0.28)]">
-                            <p className="text-[9px] font-black uppercase leading-none">Desde</p>
-                            <p className="mt-1 text-base font-black leading-none">${vehiclePrice}/d</p>
-                          </div>
-                        </div>
-                      </Link>
-                      <div className="grid gap-3 p-4">
-                        {vehicleGallery.length > 1 && (
-                          <div className="grid grid-cols-3 gap-2">
-                            {vehicleGallery.map((url, photoIndex) => (
-                              <div key={`${url}-${photoIndex}`} className="h-14 overflow-hidden rounded-xl border border-white/10 bg-black">
-                                <img
-                                  src={url}
-                                  alt={`${vehicleName} foto ${photoIndex + 1}`}
-                                  className="h-full w-full object-cover object-center"
-                                  onError={(e) => {
-                                    e.currentTarget.onerror = null
-                                    e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id + photoIndex)
-                                  }}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="text-lg font-black text-white">{vehicleName}</h3>
-                          <div className="mt-2 grid grid-cols-3 gap-2 text-[10px] font-black uppercase tracking-[0.08em] text-zinc-300">
-                            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.seats || 5} plazas</span>
-                            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.vehicle_type || 'Auto'}</span>
-                            <span className="rounded-xl bg-black/35 px-2 py-2 text-center">{vehicle.insurance_included === false ? 'Seguro opc.' : 'Seguro'}</span>
-                          </div>
-                          <p className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold text-zinc-400">
-                            <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]" /> Confirmación rápida
-                          </p>
-                        </div>
-                        <Link
-                          to={`/booking?vehicle_id=${vehicle.id}`}
-                          className="inline-flex min-h-[46px] items-center justify-center rounded-2xl bg-[#d4af37] px-4 text-xs font-black uppercase tracking-[0.18em] text-black active:scale-[0.98]"
-                        >
-                          Reservar este coche
-                        </Link>
-                      </div>
-                    </article>
-                  )
-                })}
+                {featured.map((vehicle, index) => (
+                  <MobileHomeVehicleCard key={`${vehicle.id}-${index}`} vehicle={vehicle} index={index} />
+                ))}
               </div>
             </section>
           </div>

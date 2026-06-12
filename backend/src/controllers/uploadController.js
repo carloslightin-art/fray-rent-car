@@ -15,11 +15,20 @@ const storage = multer.diskStorage({
     cb(null, uploadPath)
   },
   filename: (req, file, cb) => {
-    // Nombre único: vehicle-{id}-{timestamp}-{originalname}
+    // Extensión derivada del mimetype (nunca del nombre original) para que
+    // un archivo malicioso no pueda guardarse como .html/.svg y servirse
+    // con un Content-Type ejecutable desde /uploads.
+    const extByMime = {
+      'image/jpeg': '.jpg',
+      'image/jpg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+      'image/gif': '.gif'
+    }
+    const ext = extByMime[file.mimetype] || '.jpg'
     const timestamp = Date.now()
-    const ext = path.extname(file.originalname)
-    const filename = `vehicle-${timestamp}${ext}`
-    cb(null, filename)
+    const random = Math.random().toString(36).slice(2, 8)
+    cb(null, `vehicle-${timestamp}-${random}${ext}`)
   }
 })
 
@@ -139,22 +148,36 @@ const deleteVehicleImageController = async (req, res) => {
       return res.status(404).json({ message: 'Vehículo no encontrado' })
     }
 
-    if (!vehicle.image_url) {
+    const { imageUrl } = req.body || {}
+    const currentGallery = parseVehicleGallery(vehicle.gallery_images)
+    const targetImage = imageUrl || vehicle.image_url
+
+    if (!targetImage) {
       return res.status(400).json({ message: 'El vehículo no tiene imagen' })
     }
 
-    // Eliminar archivo físico
-    if (vehicle.image_url.includes('/uploads/')) {
-      const filePath = path.join(__dirname, '../../', vehicle.image_url)
+    if (imageUrl && ![vehicle.image_url, ...currentGallery].includes(imageUrl)) {
+      return res.status(404).json({ message: 'La foto no pertenece a este vehículo' })
+    }
+
+    // Eliminar archivo físico solo si es un upload interno.
+    if (targetImage.includes('/uploads/')) {
+      const filePath = path.join(__dirname, '../../', targetImage)
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath)
       }
     }
 
-    // Actualizar base de datos
-    await vehicle.update({ image_url: null })
+    // Actualizar base de datos: quitar solo la foto seleccionada
+    // y promover la siguiente foto de galería como principal si hace falta.
+    const remainingGallery = currentGallery.filter((url) => url !== targetImage)
 
-    res.json({ message: 'Imagen eliminada correctamente' })
+    await vehicle.update({
+      image_url: vehicle.image_url === targetImage ? (remainingGallery[0] || null) : vehicle.image_url,
+      gallery_images: remainingGallery
+    })
+
+    res.json({ message: 'Foto eliminada correctamente', imageUrl: targetImage, vehicle: serializeVehicle(vehicle) })
   } catch (error) {
     return res.status(500).json({ 
       message: 'Error al eliminar imagen', 

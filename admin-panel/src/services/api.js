@@ -54,7 +54,9 @@ export const uploadVehicleImage = (vehicleId, formData) => {
     }
   })
 }
-export const deleteVehicleImage = (vehicleId) => api.delete(`/upload/vehicle/${vehicleId}`)
+export const deleteVehicleImage = (vehicleId, imageUrl) => api.delete(`/upload/vehicle/${vehicleId}`, {
+  data: imageUrl ? { imageUrl } : undefined
+})
 
 // Users API
 export const getUsers = () => api.get('/users')

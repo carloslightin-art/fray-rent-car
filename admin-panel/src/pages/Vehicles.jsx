@@ -275,23 +275,36 @@ function Vehicles() {
         e.target.value = ''
       }
     } else {
-      setSelectedImageFiles(filesToUse)
       const previews = await Promise.all(filesToUse.map((file) => new Promise((resolve) => {
         const reader = new FileReader()
         reader.onload = (event) => resolve(event.target.result)
         reader.readAsDataURL(file)
       })))
-      setFormData(prev => ({
-        ...prev,
-        image_url: previews[0] || '',
-        gallery_images: previews
-      }))
+
+      setSelectedImageFiles(prev => ([...prev, ...filesToUse].slice(0, 6)))
+      setFormData(prev => {
+        const nextGallery = uniqueRealVehicleImages([
+          ...(Array.isArray(prev.gallery_images) ? prev.gallery_images : []),
+          ...previews
+        ]).slice(0, 6)
+
+        return {
+          ...prev,
+          image_url: nextGallery[0] || '',
+          gallery_images: nextGallery
+        }
+      })
     }
   }
 
   // Helper para normalizar URLs de imágenes
   const getVehicleImageUrl = (url) => {
     if (!url || url === '') return null
+    // Si es preview local antes de guardar, usarlo directamente.
+    // No convertir data:image/... a http://localhost:5001/data:image/...
+    if (url.startsWith('data:')) {
+      return url
+    }
     // Si ya es URL absoluta, retornarla directamente
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url

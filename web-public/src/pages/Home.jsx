@@ -8,14 +8,13 @@ import Footer from '../components/Footer'
 import MobileAppHome from '../components/MobileAppHome'
 import { getVehicles } from '../services/api'
 import { getWebsiteSection } from '../services/websiteContent'
-import { luxuryVehicles } from '../data/vehicles'
 import useMobileAppMode from '../hooks/useMobileAppMode'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MonitorSmartphone, Database, LayoutDashboard, Smartphone } from 'lucide-react'
 
 function Home() {
   const isMobileAppMode = useMobileAppMode()
-  const [fleetVehicles, setFleetVehicles] = useState(luxuryVehicles)
+  const [fleetVehicles, setFleetVehicles] = useState([])
   const [footerData, setFooterData] = useState({
     phone: '+1 809 000 0000',
     email: 'info@frayrentcar.com',
@@ -41,12 +40,13 @@ function Home() {
               vehicle_type: v.vehicle_type || v.category || 'Económico',
               insurance_included: v.insurance_included !== false
             }))
-            const apiNames = new Set(apiVehicles.map((vehicle) => vehicle.name.toLowerCase().trim()))
-            const fallbackVehicles = luxuryVehicles.filter((vehicle) => !apiNames.has(vehicle.name.toLowerCase().trim()))
-            setFleetVehicles([...apiVehicles, ...fallbackVehicles])
+            // Si hay vehículos reales, mostrar SOLO los reales. La flota demo
+            // queda únicamente como fallback cuando la API no tiene datos.
+            setFleetVehicles(apiVehicles)
           }
         } catch (_err) {
-          setFleetVehicles(luxuryVehicles)
+          // No mostrar coches demo en producción si la API falla.
+          setFleetVehicles([])
         }
 
         try {

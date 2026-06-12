@@ -35,6 +35,16 @@ function Vehicles() {
   const isOwner = user?.role === 'owner'
   const isWorker = user?.role === 'worker'
 
+  const DEMO_VEHICLE_IMAGE_RE = /^\/images\/vehicles\/car-\d+\.(jpe?g|png|webp|gif)$/i
+
+  const isDemoVehicleImage = (url = '') => (
+    typeof url === 'string' && DEMO_VEHICLE_IMAGE_RE.test(url)
+  )
+
+  const uniqueRealVehicleImages = (images = []) => Array.from(new Set(
+    images.filter((url) => url && !isDemoVehicleImage(url))
+  ))
+
   const fetchVehicles = async () => {
     try {
       setLoading(true)
@@ -73,19 +83,18 @@ function Vehicles() {
 
     // No enviar previews base64; las fotos nuevas se suben por separado
     const { image_url, gallery_images, ...restData } = formData
+    const realGalleryImages = uniqueRealVehicleImages(Array.isArray(gallery_images) ? gallery_images : [])
     const data = {
       ...restData,
       year: parseInt(formData.year),
       price_per_day: parseFloat(formData.price_per_day),
       sort_order: parseInt(formData.sort_order) || 0,
       seats: parseInt(formData.seats) || 5,
-      gallery_images: Array.isArray(gallery_images)
-        ? gallery_images.filter((url) => url && !url.startsWith('data:'))
-        : []
+      gallery_images: realGalleryImages.filter((url) => !url.startsWith('data:'))
     }
 
     // Si image_url es una URL real (no base64), enviarla
-    if (image_url && !image_url.startsWith('data:')) {
+    if (image_url && !image_url.startsWith('data:') && !isDemoVehicleImage(image_url)) {
       data.image_url = image_url
     }
 
@@ -116,6 +125,10 @@ function Vehicles() {
   }
 
   const handleEdit = (vehicle) => {
+    const realGalleryImages = uniqueRealVehicleImages([
+      vehicle.image_url,
+      ...(Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : [])
+    ])
     setEditingVehicle(vehicle)
     setSelectedImageFiles([])
     setFormData({
@@ -125,8 +138,8 @@ function Vehicles() {
       price_per_day: vehicle.price_per_day,
       status: vehicle.status,
       category: vehicle.category || 'economico',
-      image_url: vehicle.image_url || '',
-      gallery_images: Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : [],
+      image_url: realGalleryImages[0] || '',
+      gallery_images: realGalleryImages,
       seats: vehicle.seats || 5,
       vehicle_type: vehicle.vehicle_type || vehicle.category || 'Económico',
       insurance_included: vehicle.insurance_included !== false,
@@ -308,8 +321,11 @@ function Vehicles() {
   }
 
   const getDisplayVehicleImage = (vehicle) => {
-    const gallery = Array.isArray(vehicle?.gallery_images) ? vehicle.gallery_images : []
-    return getVehicleImageUrl(vehicle?.image_url || gallery[0]) || getFallbackVehicleImage(vehicle)
+    const gallery = uniqueRealVehicleImages([
+      vehicle?.image_url,
+      ...(Array.isArray(vehicle?.gallery_images) ? vehicle.gallery_images : [])
+    ])
+    return getVehicleImageUrl(gallery[0]) || getFallbackVehicleImage(vehicle)
   }
 
   const getStatusLabel = (status) => {
@@ -703,9 +719,12 @@ function Vehicles() {
                 <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.seats || 5} plazas</span>
                 <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.vehicle_type || getCategoryLabel(vehicle.category)}</span>
                 <span className="rounded-full bg-white/5 px-2 py-1">{vehicle.insurance_included === false ? 'Seguro opcional' : 'Seguro incluido'}</span>
-                {vehicle.gallery_images?.length > 0 && (
-                  <span className="rounded-full bg-luxuryGold/10 px-2 py-1 text-luxuryGold">{vehicle.gallery_images.length} {vehicle.gallery_images.length === 1 ? 'foto' : 'fotos'}</span>
-                )}
+                {uniqueRealVehicleImages([vehicle.image_url, ...(Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : [])]).length > 0 && (() => {
+                  const photoCount = uniqueRealVehicleImages([vehicle.image_url, ...(Array.isArray(vehicle.gallery_images) ? vehicle.gallery_images : [])]).length
+                  return (
+                    <span className="rounded-full bg-luxuryGold/10 px-2 py-1 text-luxuryGold">{photoCount} {photoCount === 1 ? 'foto' : 'fotos'}</span>
+                  )
+                })()}
                 {vehicle.sort_order > 0 && (
                   <span className="rounded-full bg-white/5 px-2 py-1">Orden: {vehicle.sort_order}</span>
                 )}

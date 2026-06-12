@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+
 const parseVehicleGallery = (value) => {
   if (!value) return []
   if (Array.isArray(value)) return value.filter(Boolean)
@@ -19,6 +22,16 @@ const isDemoVehicleImage = (url = '') => (
 )
 
 const realVehicleImages = (images = []) => uniqueImages(images).filter((url) => !isDemoVehicleImage(url))
+
+const uploadFileExists = (url = '') => {
+  if (typeof url !== 'string' || !url.startsWith('/uploads/')) return true
+
+  const relativePath = url.replace(/^\/+/, '')
+  const filePath = path.join(__dirname, '../../', relativePath)
+  return fs.existsSync(filePath)
+}
+
+const availableVehicleImages = (images = []) => realVehicleImages(images).filter(uploadFileExists)
 
 const normalizeVehiclePayload = (payload = {}) => {
   const allowed = {
@@ -64,7 +77,7 @@ const serializeVehicle = (vehicle) => {
     data.image_url,
     ...parseVehicleGallery(data.gallery_images)
   ])
-  const gallery = realVehicleImages(rawGallery)
+  const gallery = availableVehicleImages(rawGallery)
   return {
     ...data,
     image_url: gallery[0] || null,
@@ -80,6 +93,8 @@ module.exports = {
   uniqueImages,
   isDemoVehicleImage,
   realVehicleImages,
+  uploadFileExists,
+  availableVehicleImages,
   normalizeVehiclePayload,
   serializeVehicle
 }

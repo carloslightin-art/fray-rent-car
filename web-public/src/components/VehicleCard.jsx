@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Fuel, Gauge, ShieldCheck } from 'lucide-react'
 import { getFallbackVehicleImageUrl, getVehicleGalleryUrls, formatVehicleDisplayName, formatVehiclePrice } from '../utils/imageUtils'
@@ -5,14 +6,19 @@ import { getFallbackVehicleImageUrl, getVehicleGalleryUrls, formatVehicleDisplay
 function VehicleCard({ vehicle }) {
   const { id, name, price_per_day } = vehicle
   const gallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
+  const [selectedImage, setSelectedImage] = useState(gallery[0] || '')
   const displayName = formatVehicleDisplayName(name)
   const displayPrice = formatVehiclePrice(price_per_day)
+
+  useEffect(() => {
+    setSelectedImage(gallery[0] || '')
+  }, [id, gallery[0]])
 
   return (
     <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#080808] shadow-[0_28px_80px_rgba(0,0,0,0.34)] transition duration-500 hover:-translate-y-1 hover:border-[#d4af37]/45 hover:shadow-[0_36px_100px_rgba(0,0,0,0.55)]">
       <div className="relative aspect-[16/11] overflow-hidden bg-[#050505]">
         <img
-          src={gallery[0] || getFallbackVehicleImageUrl(id)}
+          src={selectedImage || gallery[0] || getFallbackVehicleImageUrl(id)}
           alt={displayName}
           className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           style={{ filter: 'brightness(0.92) contrast(1.08) saturate(1.05)' }}
@@ -27,7 +33,17 @@ function VehicleCard({ vehicle }) {
         {gallery.length > 1 && (
           <div className="absolute bottom-4 left-4 right-4 grid grid-cols-3 gap-2">
             {gallery.map((url, index) => (
-              <div key={`${url}-${index}`} className="h-14 overflow-hidden rounded-xl border border-white/15 bg-black/70">
+              <button
+                key={`${url}-${index}`}
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  setSelectedImage(url)
+                }}
+                aria-label={`Ver foto ${index + 1} de ${displayName}`}
+                className={`h-14 overflow-hidden rounded-xl border bg-black/70 transition ${selectedImage === url ? 'border-[#d4af37] ring-2 ring-[#d4af37]/55' : 'border-white/15 hover:border-[#d4af37]/70'}`}
+              >
                 <img
                   src={url}
                   alt={`${displayName} foto ${index + 1}`}
@@ -37,7 +53,7 @@ function VehicleCard({ vehicle }) {
                     e.currentTarget.src = getFallbackVehicleImageUrl(id + index)
                   }}
                 />
-              </div>
+              </button>
             ))}
           </div>
         )}

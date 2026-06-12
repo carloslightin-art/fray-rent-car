@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Fuel, Gauge, ShieldCheck } from 'lucide-react'
 import { getFallbackVehicleImageUrl, getVehicleGalleryUrls, formatVehicleDisplayName, formatVehiclePrice } from '../utils/imageUtils'
+import FullImageModal from './FullImageModal'
 
 function VehicleCard({ vehicle }) {
   const { id, name, price_per_day } = vehicle
   const gallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
   const [selectedImage, setSelectedImage] = useState(gallery[0] || '')
+  const [fullImage, setFullImage] = useState('')
   const displayName = formatVehicleDisplayName(name)
   const displayPrice = formatVehiclePrice(price_per_day)
 
@@ -17,15 +19,22 @@ function VehicleCard({ vehicle }) {
   return (
     <article className="group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#080808] shadow-[0_28px_80px_rgba(0,0,0,0.34)] transition duration-500 hover:-translate-y-1 hover:border-[#d4af37]/45 hover:shadow-[0_36px_100px_rgba(0,0,0,0.55)]">
       <div className="relative aspect-[16/11] overflow-hidden bg-[#050505]">
-        <img
-          src={selectedImage || gallery[0] || getFallbackVehicleImageUrl(id)}
-          alt={displayName}
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-          style={{ filter: 'brightness(0.92) contrast(1.08) saturate(1.05)' }}
-          onError={(e) => {
-            e.currentTarget.src = getFallbackVehicleImageUrl(id)
-          }}
-        />
+        <button
+          type="button"
+          onClick={() => setFullImage(selectedImage || gallery[0] || getFallbackVehicleImageUrl(id))}
+          aria-label={`Ver foto completa de ${displayName}`}
+          className="block h-full w-full cursor-zoom-in"
+        >
+          <img
+            src={selectedImage || gallery[0] || getFallbackVehicleImageUrl(id)}
+            alt={displayName}
+            className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            style={{ filter: 'brightness(0.92) contrast(1.08) saturate(1.05)' }}
+            onError={(e) => {
+              e.currentTarget.src = getFallbackVehicleImageUrl(id)
+            }}
+          />
+        </button>
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/16 to-transparent" />
         <div className="absolute left-4 top-4 rounded-full border border-[#d4af37]/30 bg-black/55 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#d4af37] backdrop-blur-md">
           {gallery.length} {gallery.length === 1 ? 'foto' : 'fotos'}
@@ -86,6 +95,11 @@ function VehicleCard({ vehicle }) {
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
+      <FullImageModal
+        imageUrl={fullImage}
+        alt={`${displayName} foto completa`}
+        onClose={() => setFullImage('')}
+      />
     </article>
   )
 }

@@ -12,6 +12,7 @@ import {
   UserRound
 } from 'lucide-react'
 import { getFallbackVehicleImageUrl, getVehicleGalleryUrls } from '../utils/imageUtils'
+import FullImageModal from './FullImageModal'
 
 const navItems = [
   { label: 'Inicio', icon: Home, to: '/' },
@@ -39,6 +40,7 @@ function MobileHomeVehicleCard({ vehicle, index }) {
   const vehiclePrice = formatPrice(vehicle.price_per_day)
   const vehicleGallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
   const [selectedImage, setSelectedImage] = useState(vehicleGallery[0] || '')
+  const [fullImage, setFullImage] = useState('')
 
   useEffect(() => {
     setSelectedImage(vehicleGallery[0] || '')
@@ -51,14 +53,24 @@ function MobileHomeVehicleCard({ vehicle, index }) {
     >
       <Link to={`/booking?vehicle=${vehicle.id}`} className="block">
         <div className="relative h-[168px] overflow-hidden bg-black">
-          <img
-            src={selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
-            alt={vehicleName}
-            className="h-full w-full object-cover object-center"
-            onError={(e) => {
-              e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault()
+              setFullImage(selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id))
             }}
-          />
+            aria-label={`Ver foto completa de ${vehicleName}`}
+            className="block h-full w-full cursor-zoom-in"
+          >
+            <img
+              src={selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
+              alt={vehicleName}
+              className="h-full w-full object-cover object-center"
+              onError={(e) => {
+                e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
+              }}
+            />
+          </button>
           <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-black/8" />
           <div className="absolute left-3 top-3 rounded-full border border-[#d4af37]/30 bg-black/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#d4af37] backdrop-blur-md">
             {vehicleGallery.length} {vehicleGallery.length === 1 ? 'foto' : 'fotos'}
@@ -111,6 +123,11 @@ function MobileHomeVehicleCard({ vehicle, index }) {
           Reservar este coche
         </Link>
       </div>
+      <FullImageModal
+        imageUrl={fullImage}
+        alt={`${vehicleName} foto completa`}
+        onClose={() => setFullImage('')}
+      />
     </article>
   )
 }
@@ -122,6 +139,7 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
   const heroPrice = formatPrice(heroVehicle?.price_per_day)
   const heroGallery = getVehicleGalleryUrls(heroVehicle).slice(0, 3)
   const [selectedHeroImage, setSelectedHeroImage] = useState(heroGallery[0] || '')
+  const [fullHeroImage, setFullHeroImage] = useState('')
   const phone = footerData.phone || '+1 809 000 0000'
 
   useEffect(() => {
@@ -180,14 +198,21 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
               <div className="absolute inset-x-3 bottom-2 h-20 rounded-full bg-black/80 blur-xl" />
               <div className="relative overflow-hidden rounded-[2rem] border border-[#d4af37]/18 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.015))] p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
                 <div className="relative aspect-[1.45] overflow-hidden rounded-[1.55rem] bg-black">
-                  <img
-                    src={selectedHeroImage || heroGallery[0] || getFallbackVehicleImageUrl(heroVehicle?.id)}
-                    alt={heroName}
-                    className="absolute inset-0 h-full w-full object-cover object-center"
-                    onError={(e) => {
-                      e.currentTarget.src = getFallbackVehicleImageUrl(heroVehicle?.id)
-                    }}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setFullHeroImage(selectedHeroImage || heroGallery[0] || getFallbackVehicleImageUrl(heroVehicle?.id))}
+                    aria-label={`Ver foto completa de ${heroName}`}
+                    className="absolute inset-0 cursor-zoom-in"
+                  >
+                    <img
+                      src={selectedHeroImage || heroGallery[0] || getFallbackVehicleImageUrl(heroVehicle?.id)}
+                      alt={heroName}
+                      className="h-full w-full object-cover object-center"
+                      onError={(e) => {
+                        e.currentTarget.src = getFallbackVehicleImageUrl(heroVehicle?.id)
+                      }}
+                    />
+                  </button>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-transparent to-black/18" />
                   <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
                     <div>
@@ -252,6 +277,12 @@ function MobileAppHome({ vehicles = [], footerData = {} }) {
                 <CarFront className="h-6 w-6" />
               </Link>
             </div>
+
+            <FullImageModal
+              imageUrl={fullHeroImage}
+              alt={`${heroName} foto completa`}
+              onClose={() => setFullHeroImage('')}
+            />
 
             <section className="mt-[7.25rem] pb-[calc(7rem+env(safe-area-inset-bottom))]">
               <div className="mb-4 flex items-center justify-between">

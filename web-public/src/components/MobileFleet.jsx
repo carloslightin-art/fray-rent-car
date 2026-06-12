@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CalendarCheck, CarFront, Home, MapPin, ShieldCheck, UserRound } from 'lucide-react'
 import { getFallbackVehicleImageUrl, getVehicleGalleryUrls } from '../utils/imageUtils'
+import FullImageModal from './FullImageModal'
 
 const navItems = [
   { label: 'Inicio', icon: Home, to: '/' },
@@ -29,6 +30,7 @@ function MobileVehicleCard({ vehicle, index }) {
   const vehiclePrice = formatPrice(vehicle.price_per_day)
   const vehicleGallery = getVehicleGalleryUrls(vehicle).slice(0, 3)
   const [selectedImage, setSelectedImage] = useState(vehicleGallery[0] || '')
+  const [fullImage, setFullImage] = useState('')
 
   useEffect(() => {
     setSelectedImage(vehicleGallery[0] || '')
@@ -41,14 +43,24 @@ function MobileVehicleCard({ vehicle, index }) {
     >
       <Link to={`/booking?vehicle=${vehicle.id}`} className="block">
         <div className="relative h-[190px] overflow-hidden bg-black">
-          <img
-            src={selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
-            alt={vehicleName}
-            className="h-full w-full object-cover object-center"
-            onError={(e) => {
-              e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault()
+              setFullImage(selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id))
             }}
-          />
+            aria-label={`Ver foto completa de ${vehicleName}`}
+            className="block h-full w-full cursor-zoom-in"
+          >
+            <img
+              src={selectedImage || vehicleGallery[0] || getFallbackVehicleImageUrl(vehicle.id)}
+              alt={vehicleName}
+              className="h-full w-full object-cover object-center"
+              onError={(e) => {
+                e.currentTarget.src = getFallbackVehicleImageUrl(vehicle.id)
+              }}
+            />
+          </button>
           <div className="absolute inset-0 bg-gradient-to-t from-black/68 via-transparent to-black/8" />
           <div className="absolute left-3 top-3 rounded-full border border-[#d4af37]/30 bg-black/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#d4af37] backdrop-blur-md">
             {vehicleGallery.length} {vehicleGallery.length === 1 ? 'foto' : 'fotos'}
@@ -104,6 +116,11 @@ function MobileVehicleCard({ vehicle, index }) {
           Reservar este coche
         </Link>
       </div>
+      <FullImageModal
+        imageUrl={fullImage}
+        alt={`${vehicleName} foto completa`}
+        onClose={() => setFullImage('')}
+      />
     </article>
   )
 }

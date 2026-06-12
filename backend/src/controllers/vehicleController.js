@@ -1,6 +1,20 @@
 const { errorDetails } = require('../utils/safeErrors')
-const { Vehicle } = require('../models')
-const { normalizeVehiclePayload, serializeVehicle } = require('../utils/vehicleImages')
+const fs = require('fs')
+const path = require('path')
+const { Vehicle, Reservation, sequelize } = require('../models')
+const { normalizeVehiclePayload, serializeVehicle, parseVehicleGallery } = require('../utils/vehicleImages')
+
+const removeUploadedVehicleFiles = (vehicle) => {
+  const images = [vehicle.image_url, ...parseVehicleGallery(vehicle.gallery_images)]
+    .filter((url) => typeof url === 'string' && url.startsWith('/uploads/'))
+
+  for (const url of new Set(images)) {
+    const filePath = path.join(__dirname, '../../', url)
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
+    }
+  }
+}
 
 // Listar todos los vehículos (para admin)
 const listVehicles = async (_req, res) => {
@@ -120,8 +134,23 @@ const deleteVehicle = async (req, res) => {
       return res.status(404).json({ message: 'Vehículo no encontrado' })
     }
 
-    await vehicle.destroy()
-    return res.json({ message: 'Vehículo eliminado correctamente' })
+    const reservationCount = await Reservation.count({ where: { vehicle_id: vehicle.id } })
+
+    await sequelize.transaction(async (transaction) => {
+      if (reservationCount > 0) {
+        await Reservation.destroy({ where: { vehicle_id: vehicle.id }, transaction })
+      }
+      await vehicle.destroy({ transaction })
+    })
+
+    removeUploadedVehicleFiles(vehicle)
+
+    return res.json({
+      message: reservationCount > 0
+        ? `Vehículo eliminado correctamente junto con ${reservationCount} reserva(s) asociada(s)`
+        : 'Vehículo eliminado correctamente',
+      deletedReservations: reservationCount
+    })
   } catch (error) {
     return res.status(500).json({ message: 'Error al eliminar vehículo', ...errorDetails(error) })
   }

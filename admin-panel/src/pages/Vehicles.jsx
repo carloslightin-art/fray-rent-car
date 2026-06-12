@@ -141,17 +141,19 @@ function Vehicles() {
   const handleDelete = async (id) => {
     if (!isOwner) {
       alert('Solo el owner puede eliminar vehículos')
-      return
+      return false
     }
 
-    if (!confirm('¿Estás seguro de eliminar este vehículo?')) return
+    if (!confirm('¿Estás seguro de eliminar este vehículo?')) return false
 
     try {
       await deleteVehicle(id)
       await fetchVehicles()
+      return true
     } catch (err) {
       console.error('Error deleting vehicle:', err)
       alert(err.response?.data?.message || 'Error al eliminar el vehículo')
+      return false
     }
   }
 
@@ -623,7 +625,7 @@ function Vehicles() {
             </div>
           </div>
           
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             <button 
               type="submit" 
               disabled={isSubmitting}
@@ -638,6 +640,18 @@ function Vehicles() {
             >
               Cancelar
             </button>
+            {editingVehicle && isOwner && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const deleted = await handleDelete(editingVehicle.id)
+                  if (deleted) resetForm()
+                }}
+                className="rounded-lg border border-luxuryDanger/40 px-4 py-2 text-sm font-semibold text-luxuryDanger transition-colors hover:border-luxuryDanger hover:bg-luxuryDanger/10"
+              >
+                Eliminar coche
+              </button>
+            )}
           </div>
         </form>
       )}

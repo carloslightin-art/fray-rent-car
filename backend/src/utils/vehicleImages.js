@@ -14,6 +14,12 @@ const parseVehicleGallery = (value) => {
 
 const uniqueImages = (images = []) => Array.from(new Set(images.filter(Boolean)))
 
+const isDemoVehicleImage = (url = '') => (
+  typeof url === 'string' && /^\/images\/vehicles\/car-\d+\.(jpe?g|png|webp|gif)$/i.test(url)
+)
+
+const realVehicleImages = (images = []) => uniqueImages(images).filter((url) => !isDemoVehicleImage(url))
+
 const normalizeVehiclePayload = (payload = {}) => {
   const allowed = {
     brand: payload.brand,
@@ -54,13 +60,14 @@ const normalizeVehiclePayload = (payload = {}) => {
 
 const serializeVehicle = (vehicle) => {
   const data = typeof vehicle.toJSON === 'function' ? vehicle.toJSON() : { ...vehicle }
-  const gallery = uniqueImages([
+  const rawGallery = uniqueImages([
     data.image_url,
     ...parseVehicleGallery(data.gallery_images)
   ])
+  const gallery = realVehicleImages(rawGallery)
   return {
     ...data,
-    image_url: data.image_url || gallery[0] || null,
+    image_url: gallery[0] || null,
     gallery_images: gallery,
     seats: data.seats || 5,
     vehicle_type: data.vehicle_type || data.category || 'Económico',
@@ -71,6 +78,8 @@ const serializeVehicle = (vehicle) => {
 module.exports = {
   parseVehicleGallery,
   uniqueImages,
+  isDemoVehicleImage,
+  realVehicleImages,
   normalizeVehiclePayload,
   serializeVehicle
 }

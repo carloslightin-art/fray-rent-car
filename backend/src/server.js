@@ -24,8 +24,11 @@ const app = express()
 // SEGURIDAD
 // ============================================================
 
-// Helmet: headers de seguridad (CSP, X-Frame-Options, etc.)
-app.use(helmet())
+// Helmet: headers de seguridad. Las fotos públicas se sirven desde el API (5001)
+// hacia frontends Vite/producción en otro origen, así que CORP debe permitir cross-origin.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}))
 
 // CORS: en desarrollo acepta cualquier origen; en producción usa CORS_ORIGIN
 if (process.env.NODE_ENV === 'production') {
